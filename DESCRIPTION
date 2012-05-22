@@ -1,0 +1,12 @@
+Package: galaxify
+Title: Make an R function available in te Galaxy web platform
+Description: Given an R function and its manual page, make the documented
+    function available in Galaxy.
+Version: 0.99.1
+Author: The Bioconductor Dev Team
+Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
+biocViews: Infrastructure
+Depends: XML, methods, tools
+Imports: BiocGenerics
+Suggests: RUnit
+License: Artistic-2.0

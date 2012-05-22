@@ -1,0 +1,6 @@
+export(galaxify)
+export(functionToGalaxify)
+export(GalaxyParam)
+exportClass(GalaxyParam)
+
+import(BiocGenerics)
