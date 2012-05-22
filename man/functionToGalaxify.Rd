@@ -55,15 +55,15 @@ functionToGalaxify(inputfile1, inputfile2, plotTitle,
     written to one or more files, and the names of these files should
     be passed into the function as arguments.
     
-    Functions should be documented with a manual page. \code{galaxify}
+    Functions should be documented with a manual page. \code{RGalaxy}
     will use this manual page to fill in relevant sections of the
     Galaxy XML file.
 }
 
 \examples{
 
-functionToGalaxify(system.file("extdata", "a.tsv", package="galaxify"),
-    system.file("extdata", "b.tsv", package="galaxify"),
+functionToGalaxify(system.file("extdata", "a.tsv", package="RGalaxy"),
+    system.file("extdata", "b.tsv", package="RGalaxy"),
     "My Plot Title", "My Plot Subtitle",
     "output.csv", "output.pdf")
     

@@ -1,2 +1,2 @@
-require("galaxify") || stop("unable to load galaxify package")
-BiocGenerics:::testPackage("galaxify")
+require("RGalaxy") || stop("unable to load RGalaxy package")
+BiocGenerics:::testPackage("RGalaxy")

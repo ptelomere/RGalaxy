@@ -1,9 +1,9 @@
 galaxy.home = "fake_galaxy_dir"
-tool.dir <- "galaxify_test_tool"
+tool.dir <- "RGalaxy_test_tool"
 func.name <- "functionToGalaxify"
 
 dir.create(galaxy.home, recursive=TRUE, showWarnings=FALSE)
-file.copy(system.file("galaxy", "tool_conf.xml", package="galaxify"),
+file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
     file.path(galaxy.home, "tool_conf.xml"), overwrite=FALSE)
 
 
@@ -69,9 +69,9 @@ test_galaxify <- function()
     galaxify(functionToGalaxify, func.name,
         manpage="functionToGalaxify",
         galaxy.home=galaxy.home, name="Add", 
-        package="galaxify",
+        package="RGalaxy",
         param.list=params, tool.dir=tool.dir,
-        version=packageDescription("galaxify")$Version,
+        version=packageDescription("RGalaxy")$Version,
         section.name="Test Section",
         section.id="testSectionId")
     
@@ -100,13 +100,13 @@ test_galaxify_on_function_not_in_package <- function()
         GalaxyParam(name="outputfile1", type="output", format="csv"),
         GalaxyParam(name="outputfile2", type="output", format="pdf"))
 
-    source(system.file("extdata", "functionToGalaxify2.R", package="galaxify"))
-    manpage <- system.file("extdata", "functionToGalaxify2.Rd", package="galaxify")
+    source(system.file("extdata", "functionToGalaxify2.R", package="RGalaxy"))
+    manpage <- system.file("extdata", "functionToGalaxify2.Rd", package="RGalaxy")
     galaxify(functionToGalaxify, func.name,
         manpage=manpage,
         galaxy.home=galaxy.home, name="Add", 
         param.list=params, tool.dir=tool.dir,
-        version=packageDescription("galaxify")$Version,
+        version=packageDescription("RGalaxy")$Version,
         section.name="Test Section",
         section.id="testSectionId")
     
@@ -148,9 +148,9 @@ test_galaxify_with_select <- function()
     galaxify(functionToGalaxify, func.name,
         manpage="functionToGalaxify",
         galaxy.home=galaxy.home, name="Add", 
-        package="galaxify",
+        package="RGalaxy",
         param.list=params, tool.dir=tool.dir,
-        version=packageDescription("galaxify")$Version,
+        version=packageDescription("RGalaxy")$Version,
         section.name="Test Section",
         section.id="testSectionId")
     
@@ -189,8 +189,8 @@ test_galaxify_with_select <- function()
         "description (title in manpage) is wrong")
     R_exe <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript")
     d <- tempdir()
-    tsv1 <- system.file("extdata", "a.tsv", package="galaxify")
-    tsv2 <- system.file("extdata", "b.tsv", package="galaxify")
+    tsv1 <- system.file("extdata", "a.tsv", package="RGalaxy")
+    tsv2 <- system.file("extdata", "b.tsv", package="RGalaxy")
     
     outputMatrix <- file.path(d, "output.csv")
     outputPdf <- file.path(d, "output.pdf")

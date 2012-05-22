@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Adding R functions to Galaxy}
-%\VignettePackage{galaxify}
+%\VignettePackage{RGalaxy}
 
 \documentclass{article}
 \usepackage{Sweave,fullpage}
@@ -16,7 +16,8 @@
 
 \newcommand{\software}[1]{\textsf{#1}}
 \newcommand{\R}{\software{R}}
-\newcommand{\galaxify}{\Rpackage{galaxify}}
+\newcommand{\RGalaxy}{\Rpackage{RGalaxy}}
+\newcommand{\galaxify}{\Rcode{galaxify}}
 
 \title{Adding R functions to Galaxy}
 \author{Dan Tenenbaum}
@@ -39,7 +40,7 @@ Normally, in order to expose new functionality (a tool in Galaxy parlance) in a 
 instance, you have to manually create an XML file with information about the function,
 and modify an additional XML file.
 
-The \galaxify{} package automates this process, pulling most of the necessary 
+The \RGalaxy{} package automates this process, pulling most of the necessary 
 information from the function itself and its manual page (you provide the
 remaining information as arguments to the \Rcode{galaxify()} function).
 
@@ -70,11 +71,11 @@ Galaxy XML file. The following sections of the man page are required:
 \end{itemize}
 
 The following example illustrates these best practices (this function
-is in the \galaxify{} package under the name \Rcode{functionToGalaxify}:
+is in the \RGalaxy{} package under the name \Rcode{functionToGalaxify}:
 
 % it would be really nice if comments would show up in this function
 <<exampleFunction, eval=true, echo=false>>=
-library(galaxify)
+library(RGalaxy)
 show(functionToGalaxify)
 @
 
@@ -108,11 +109,11 @@ described above, you can make it available to Galaxy as follows:
 
 <<hidden-setup, echo=false, results=hide>>=
 galaxy.home <- getwd()
-tool.dir <- "galaxify_test_tool"
+tool.dir <- "RGalaxy_test_tool"
 func.name <- "functionToGalaxify"
 
 #dir.create(galaxy.home, recursive=TRUE, showWarnings=FALSE)
-file.copy(system.file("galaxy", "tool_conf.xml", package="galaxify"),
+file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
     file.path(galaxy.home, "tool_conf.xml"), overwrite=FALSE)
 
 @
@@ -138,7 +139,7 @@ galaxify(functionToGalaxify,
     manpage="functionToGalaxify",
     galaxy.home= getwd(), 
     name="Add", 
-    package="galaxify",
+    package="RGalaxy",
     param.list=params,
     tool.dir="mytool",
     section.name="Test Section",
@@ -163,8 +164,8 @@ First you need to upload some sample data sets to Galaxy.
 In R, you can obtain the path to the data sets as follows:
 
 <<datasets>>=
-system.file("extdata", "a.tsv", package="galaxify")
-system.file("extdata", "b.tsv", package="galaxify")
+system.file("extdata", "a.tsv", package="RGalaxy")
+system.file("extdata", "b.tsv", package="RGalaxy")
 @
 
 

@@ -81,7 +81,7 @@ galaxify(func, func.name, manpage, galaxy.home, name,
 ## set up galaxy.home
 galaxy.home <- tempdir()
 dir.create(galaxy.home, recursive=TRUE, showWarnings=FALSE)
-file.copy(system.file("galaxy", "tool_conf.xml", package="galaxify"),
+file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
     file.path(galaxy.home, "tool_conf.xml"), overwrite=FALSE)
 
 
@@ -96,9 +96,9 @@ params <- list(
 galaxify(functionToGalaxify, "functionToGalaxify",
     manpage="functionToGalaxify",
     galaxy.home=galaxy.home, name="Add", 
-    package="galaxify",
+    package="RGalaxy",
     param.list=params, tool.dir="mytool",
-    version=packageDescription("galaxify")$Version,
+    version=packageDescription("RGalaxy")$Version,
     section.name="Test Section",
     section.id="testSectionId")
 
