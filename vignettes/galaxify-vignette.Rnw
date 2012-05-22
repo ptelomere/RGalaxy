@@ -17,7 +17,7 @@
 \newcommand{\software}[1]{\textsf{#1}}
 \newcommand{\R}{\software{R}}
 \newcommand{\RGalaxy}{\Rpackage{RGalaxy}}
-\newcommand{\galaxify}{\Rcode{galaxify}}
+\newcommand{\galaxy}{\Rcode{galaxy}}
 
 \title{Adding R functions to Galaxy}
 \author{Dan Tenenbaum}
@@ -42,7 +42,7 @@ and modify an additional XML file.
 
 The \RGalaxy{} package automates this process, pulling most of the necessary 
 information from the function itself and its manual page (you provide the
-remaining information as arguments to the \Rcode{galaxify()} function).
+remaining information as arguments to the \galaxy{} function).
 
 \section{Best Practices For Writing 'Galaxifiable' Functions}
 
@@ -58,7 +58,7 @@ Return values of functions are ignored. Function output should be
 written to one or more files, and the names of these files should
 be passed into the function as arguments.
 
-Functions should be documented with a manual page. \galaxify{}
+Functions should be documented with a manual page. \galaxy{}
 will use this manual page to fill in relevant sections of the
 Galaxy XML file. The following sections of the man page are required:
 
@@ -102,7 +102,7 @@ Heed the tip about starting Galaxy with the "--reload" option so that
 it can be easily stopped (with control-C) and restarted.
 
 
-\section{Galaxifying a Function}
+\section{Adding a function to Galaxy}
 
 Now that you have written a function that follows the best practices
 described above, you can make it available to Galaxy as follows:
@@ -118,9 +118,9 @@ file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
 
 @
 
-First, we have to tell \galaxify{} about the arguments to your function.
+First, we have to tell \galaxy{} about the arguments to your function.
 
-<<galaxify-params>>=
+<<galaxy-params>>=
 params <- list(
     GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
     GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
@@ -130,11 +130,11 @@ params <- list(
     GalaxyParam(name="outputfile2", type="output", format="pdf"))
 @
 
-Now we can invoke the \galaxify{} function to create/modify the necessary
+Now we can invoke the \galaxy{} function to create/modify the necessary
 XML:
 
-<<galaxify-function, results=hide>>=
-galaxify(functionToGalaxify,
+<<galaxy-function, results=hide>>=
+galaxy(functionToGalaxify,
     "functionToGalaxify",
     manpage="functionToGalaxify",
     galaxy.home= getwd(), 
@@ -185,7 +185,7 @@ If we click on "Test Section", then we see the tool that has been created:
 
 Most of this information came from our function and its man page.
 
-If your function or its man page changes, just run \galaxify{} again.
+If your function or its man page changes, just run \galaxy{} again.
 You will need to restart Galaxy to see the changes.
 
 \section{Sharing Your Galaxy Tool}
@@ -193,7 +193,7 @@ You will need to restart Galaxy to see the changes.
 To share your Galaxy tool with a wider audience, you need to move 
 it to a production instance of Galaxy. The files you'll need to move are 
 GALAXY\_HOME/tool\_conf.xml (or maybe just the section that was 
-created by \galaxify{}), and the directory with your tool files
+created by \galaxy{}), and the directory with your tool files
 (in our example, that was GALAXY\_HOME/mytool). 
 
 

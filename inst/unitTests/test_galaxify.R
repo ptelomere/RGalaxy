@@ -56,7 +56,7 @@ test_galaxy_param <- function()
     checkTrue(class(gp)=="GalaxyParam", "gp has wrong class!")
 }
 
-test_galaxify <- function() 
+test_galaxy <- function() 
 {
     params <- list(
         GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
@@ -66,7 +66,7 @@ test_galaxify <- function()
         GalaxyParam(name="outputfile1", type="output", format="csv"),
         GalaxyParam(name="outputfile2", type="output", format="pdf"))
 
-    galaxify(functionToGalaxify, func.name,
+    galaxy(functionToGalaxify, func.name,
         manpage="functionToGalaxify",
         galaxy.home=galaxy.home, name="Add", 
         package="RGalaxy",
@@ -90,7 +90,7 @@ test_galaxify <- function()
     
 }
 
-test_galaxify_on_function_not_in_package <- function() 
+test_galaxy_on_function_not_in_package <- function() 
 {
     params <- list(
         GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
@@ -102,7 +102,7 @@ test_galaxify_on_function_not_in_package <- function()
 
     source(system.file("extdata", "functionToGalaxify2.R", package="RGalaxy"))
     manpage <- system.file("extdata", "functionToGalaxify2.Rd", package="RGalaxy")
-    galaxify(functionToGalaxify, func.name,
+    galaxy(functionToGalaxify, func.name,
         manpage=manpage,
         galaxy.home=galaxy.home, name="Add", 
         param.list=params, tool.dir=tool.dir,
@@ -129,11 +129,11 @@ test_galaxify_on_function_not_in_package <- function()
 
 test_missing_parameters <- function()
 {
-    checkException(galaxify(), "Can't call galaxify() with no arguments")
+    checkException(galaxy(), "Can't call galaxy() with no arguments")
     ## todo add more...
 }
 
-test_galaxify_with_select <- function() 
+test_galaxy_with_select <- function() 
 {
     selectoptions <- list("TitleA"="A", "TitleB"="B")
     params <- list(
@@ -145,7 +145,7 @@ test_galaxify_with_select <- function()
         GalaxyParam(name="outputfile1", type="output", format="csv"),
         GalaxyParam(name="outputfile2", type="output", format="pdf"))
 
-    galaxify(functionToGalaxify, func.name,
+    galaxy(functionToGalaxify, func.name,
         manpage="functionToGalaxify",
         galaxy.home=galaxy.home, name="Add", 
         package="RGalaxy",

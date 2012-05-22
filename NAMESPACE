@@ -1,4 +1,4 @@
-export(galaxify)
+export(galaxy)
 export(functionToGalaxify)
 export(GalaxyParam)
 exportClass(GalaxyParam)

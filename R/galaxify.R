@@ -24,7 +24,7 @@ editToolConfXML <-
 }
 
 
-galaxify <- 
+galaxy <- 
     function(func, func.name, manpage, galaxy.home, name, 
         package=NULL, is.exported=NULL,
         param.list, section.name, section.id, tool.dir, version)

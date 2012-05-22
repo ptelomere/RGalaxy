@@ -1,13 +1,13 @@
-\name{galaxify}
+\name{galaxy}
 
-\alias{galaxify}
+\alias{galaxy}
 \title{Make a function available in Galaxy}
 
 \description{
 }
 
 \usage{
-galaxify(func, func.name, manpage, galaxy.home, name, 
+galaxy(func, func.name, manpage, galaxy.home, name, 
     package=NULL, is.exported=NULL,
     param.list, section.name, section.id, tool.dir, version)
 }
@@ -93,7 +93,7 @@ params <- list(
     GalaxyParam(name="outputfile1", type="output", format="csv"),
     GalaxyParam(name="outputfile2", type="output", format="pdf"))
 
-galaxify(functionToGalaxify, "functionToGalaxify",
+galaxy(functionToGalaxify, "functionToGalaxify",
     manpage="functionToGalaxify",
     galaxy.home=galaxy.home, name="Add", 
     package="RGalaxy",
