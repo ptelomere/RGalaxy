@@ -40,6 +40,8 @@ functionToGalaxify(inputfile1, inputfile2, plotTitle,
 }
 
 \seealso{
+    \code{\link{galaxy}}, \code{\link{GalaxyParam}},
+    \code{\link{GalaxyConfig}}
 }
 \details{
     This trivial method illustrates some best practices to use when writing

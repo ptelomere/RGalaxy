@@ -3,35 +3,34 @@
 printf <- function(...) print(noquote(sprintf(...)))
 
 editToolConfXML <-
-    function(galaxy.home, section.name, section.id, tool.dir, func.name)
+    function(galaxyHome, sectionName, sectionId, toolDir, funcName)
 {
-    toolConfFile <- file.path(galaxy.home, "tool_conf.xml")
+    toolConfFile <- file.path(galaxyHome, "tool_conf.xml")
     if (!file.exists(toolConfFile))
-        stop("Invalid galaxy.home, no tool_conf.xml file!")
+        stop("Invalid galaxyHome, no tool_conf.xml file!")
     doc <- xmlInternalTreeParse(toolConfFile)
     toolboxNode <- xpathSApply(doc, "/toolbox")
     section <- xpathSApply(doc, 
-        sprintf("/toolbox/section[@name='%s']", section.name))
+        sprintf("/toolbox/section[@name='%s']", sectionName))
     if (length(section)>0)
         removeNodes(section)
     
     sectionNode <- newXMLNode("section", parent=toolboxNode)
-    xmlAttrs(sectionNode)["name"] <- section.name
-    xmlAttrs(sectionNode)["id"] <- section.id
+    xmlAttrs(sectionNode)["name"] <- sectionName
+    xmlAttrs(sectionNode)["id"] <- sectionId
     toolNode <- newXMLNode("tool", parent=sectionNode)
-    xmlAttrs(toolNode)["file"] <- sprintf("%s/%s.xml", tool.dir, func.name)
+    xmlAttrs(toolNode)["file"] <- sprintf("%s/%s.xml", toolDir, funcName)
     saveXML(doc, file=toolConfFile)
 }
 
 
 galaxy <- 
-    function(func, func.name, manpage, galaxy.home, name, 
-        package=NULL, is.exported=NULL,
-        param.list, section.name, section.id, tool.dir, version)
+    function(func, manpage, galaxyOutputs, name, package=NULL, is.exported=NULL,
+        paramList, version, galaxyConfig)
 {
-    requiredFields <- c("func", "func.name", "galaxy.home", "name",
-        "param.list", "section.name", "section.id", "tool.dir",
-        "manpage")
+    
+    requiredFields <- c("func", "manpage", "galaxyOutputs", "name",
+        "paramList", "galaxyConfig")
     missingFields <- character(0)
     for (requiredField in requiredFields)
     {
@@ -44,25 +43,32 @@ galaxy <-
     if (length(missingFields)>0)
     {
         msg <- "The following missing fields are required: \n"
-        msg <- paste(missingFields, collapse=", ")
+        msg <- c(msg, paste(missingFields, collapse=", "))
         stop(msg)
     }
+
+
+    funcName <- deparse(substitute(func))
+
+
     rd <- getManPage(manpage, package)
     title <- getTitle(rd)
     
-    fullToolDir <- file.path(galaxy.home, "tools", tool.dir)
+    fullToolDir <- file.path(galaxyConfig@galaxyHome, "tools",
+        galaxyConfig@toolDir)
     dir.create(file.path(fullToolDir), recursive=TRUE, showWarnings=FALSE)
-    scriptFileName <-  file.path(fullToolDir, paste(func.name, ".R", sep=""))
-    createScriptFile(scriptFileName, func, func.name, param.list,
+    scriptFileName <-  file.path(fullToolDir, paste(funcName, ".R", sep=""))
+    createScriptFile(scriptFileName, func, funcName, paramList,
         package, is.exported)
     
-    xmlFileName <- file.path(fullToolDir, paste(func.name, "xml", sep="."))
+    xmlFileName <- file.path(fullToolDir, paste(funcName, "xml", sep="."))
     unlink(xmlFileName)
     
-    editToolConfXML(galaxy.home, section.name, section.id, tool.dir, func.name)
+    editToolConfXML(galaxyConfig@galaxyHome, galaxyConfig@sectionName,
+        galaxyConfig@sectionId, galaxyConfig@toolDir, funcName)
     
     xml <- newXMLNode("tool")
-    xmlAttrs(xml)["id"]  <- func.name
+    xmlAttrs(xml)["id"]  <- funcName
     if (!is.null(package))
         version <- packageDescription(package)$Version
     xmlAttrs(xml)["name"] <- name
@@ -70,8 +76,8 @@ galaxy <-
     descNode <- newXMLNode("description", newXMLTextNode(title),
         parent=xml)
     
-    commandText <- paste(func.name, ".R ", sep="")
-    for (item in param.list)
+    commandText <- paste(funcName, ".R ", sep="")
+    for (item in paramList)
     {
         commandText <- paste(commandText, '"$', item@name, '" ', sep="")
     }
@@ -82,47 +88,50 @@ galaxy <-
     xmlAttrs(commandNode)["interpreter"] <- "Rscript"
     inputsNode <- newXMLNode("inputs", parent=xml)
     
-    outputsNode <- newXMLNode("outputs", parent=xml)
     
-    for (item in param.list)
+    for (item in paramList)
     {
-        if (item@type == "output") 
+        paramNode <- newXMLNode("param", parent=inputsNode)
+        xmlAttrs(paramNode)["name"] <- item@name
+        xmlAttrs(paramNode)["type"] <- item@type
+        
+        if(length(item@value)==0 && nchar(formals(func)[item@name])>0)
+            item@value <- unlist(formals(func)[item@name])
+        
+        
+        xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, item@name)
+        ## FIXME - should 'label' be required, not optional?
+        optionalFields <- c("label", "value", "min", "max",
+            "force_select", "display", "checked", "size")
+            
+        for (field in optionalFields)
         {
-            dataNode <- newXMLNode("data", parent=outputsNode)
-            xmlAttrs(dataNode)["format"] <- item@format
-            xmlAttrs(dataNode)["name"] <- item@name
-        } else {
-            paramNode <- newXMLNode("param", parent=inputsNode)
-            xmlAttrs(paramNode)["name"] <- item@name
-            xmlAttrs(paramNode)["type"] <- item@type
-            
-            if(length(item@value)==0 && nchar(formals(func)[item@name])>0)
-                item@value <- unlist(formals(func)[item@name])
-            
-            
-            xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, item@name)
-            optionalFields <- c("label", "value", "min", "max",
-                "force_select", "display", "checked", "size")
-            for (field in optionalFields)
+            value <- as.character(slot(item, field))
+            if (length(value) > 0)
+                xmlAttrs(paramNode)[field] <- value
+        }
+        if (item@type=="select")
+        {
+            for (option in names(item@selectoptions))
             {
-                value <- slot(item, field)
-                if (length(value) > 0)
-                    xmlAttrs(paramNode)[field] <- value
+                value <- item@selectoptions[option]
+                optionNode <- newXMLNode("option", option,
+                    parent=paramNode)
+                xmlAttrs(optionNode)["value"] <- value
             }
-            if (item@type=="select")
-            {
-                for (option in names(item@selectoptions))
-                {
-                    value <- item@selectoptions[option]
-                    optionNode <- newXMLNode("option", option,
-                        parent=paramNode)
-                    xmlAttrs(optionNode)["value"] <- value
-                }
-                
-            }
+            
         }
         invisible(NULL)
     }
+    
+    outputsNode <- newXMLNode("outputs", parent=xml)
+    for (item in galaxyOutputs)
+    {
+        dataNode <- newXMLNode("data", parent=outputsNode)
+        xmlAttrs(dataNode)["format"] <- item@format
+        xmlAttrs(dataNode)["name"] <- item@file
+    }
+    
     
     ##testsNode <- newXMLNode("tests", parent=xml) ## TODO - enable these?
     ## todo, fill in test section
@@ -145,16 +154,16 @@ generateHelpText <- function(rd)
     paste(ret, collapse="\n")
 }
 
-displayFunction <- function(func, func.name)
+displayFunction <- function(func, funcName)
 {
     funcCode <- capture.output(func) ## TODO what if func is in a package and unexported?
     funcCode <- grep("<bytecode: ", funcCode, fixed=TRUE, invert=TRUE, value=TRUE)
     funcCode <- grep("<environment: ", funcCode, fixed=TRUE, invert=TRUE, value=TRUE)
-    s <- sprintf("\n%s <- %s", func.name, paste(funcCode, collapse="\n"))
+    s <- sprintf("\n%s <- %s", funcName, paste(funcCode, collapse="\n"))
     s
 }
 
-createScriptFile <- function(scriptFileName, func, func.name, param.list, package, is.exported)
+createScriptFile <- function(scriptFileName, func, funcName, paramList, package, is.exported)
 {
     unlink(scriptFileName)
 
@@ -167,17 +176,12 @@ createScriptFile <- function(scriptFileName, func, func.name, param.list, packag
     scat()
     scat("options('useFancyQuotes' = FALSE)")
     
-    #scat("dbg <- function(msg) {cat(paste(msg,'\n',sep=''),append=T,file='~/dev/galaxy-dist/mylog')}")
-    
-    funcCode <- displayFunction(func, func.name)
+    funcCode <- displayFunction(func, funcName)
 
     scat("args <- commandArgs(TRUE)")
-    scat(paste("if (!length(args)==", length(param.list), ")",
+    scat(paste("if (!length(args)==", length(paramList), ")",
       "stop('Wrong number of command-line arguments provided.')"))
 
-    scat("print(args)")
-    #scat("dbg(length(args))")
-    #scat("dbg(args)")
     toBoolean <- function(x)
     {
         if (tolower(x) %in% c("yes", "on", "true")) return(TRUE)
@@ -186,7 +190,7 @@ createScriptFile <- function(scriptFileName, func, func.name, param.list, packag
     }
     
     itemNum = 1
-    for(item in param.list)
+    for(item in paramList)
     {
         scat(sprintf("%s <- args[%d]", item@name, itemNum))
         if (item@type == "integer")
@@ -207,7 +211,7 @@ createScriptFile <- function(scriptFileName, func, func.name, param.list, packag
         if ((!is.null(is.exported)) && length(is.exported)>0 && 
             is.exported==FALSE)
         {
-            func.name <- sprintf("%s:::%s", package, func.name)
+            funcName <- sprintf("%s:::%s", package, funcName)
         }
     }
     
@@ -221,8 +225,8 @@ createScriptFile <- function(scriptFileName, func, func.name, param.list, packag
 
     scat()
 
-    fCall <- paste(func.name, "(", sep="")
-    arglist <- lapply(param.list, function(x)
+    fCall <- paste(funcName, "(", sep="")
+    arglist <- lapply(paramList, function(x)
     {
         paste(x@name, "=", x@name, sep="")
     })
@@ -232,3 +236,16 @@ createScriptFile <- function(scriptFileName, func, func.name, param.list, packag
 
 }
 
+getSupportedExtensions <- function(galaxyHome=".")
+{
+    confFile <- file.path(galaxyHome, "datatypes_conf.xml")
+    if (!file.exists(confFile))
+    {
+        confFile <- system.file("galaxy", "datatypes_conf.xml", package="RGalaxy")
+        if (!file.exists(confFile)) stop("datatypes_conf not found!")
+    }
+    doc <- xmlInternalTreeParse(confFile)
+    extNodes <- xpathSApply(doc, "/datatypes/registration/datatype")
+    tmp <- lapply(extNodes, xmlAttrs)
+    unlist(lapply(tmp, "[[", "extension"))
+}

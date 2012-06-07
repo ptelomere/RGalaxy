@@ -1,10 +1,10 @@
-galaxy.home = "fake_galaxy_dir"
-tool.dir <- "RGalaxy_test_tool"
-func.name <- "functionToGalaxify"
+galaxyHome = "fake_galaxy_dir"
+toolDir <- "RGalaxy_test_tool"
+funcName <- "functionToGalaxify"
 
-dir.create(galaxy.home, recursive=TRUE, showWarnings=FALSE)
+dir.create(galaxyHome, recursive=TRUE, showWarnings=FALSE)
 file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
-    file.path(galaxy.home, "tool_conf.xml"), overwrite=FALSE)
+    file.path(galaxyHome, "tool_conf.xml"), overwrite=FALSE)
 
 
 test_validity_method <- function()
@@ -19,6 +19,8 @@ test_validity_method <- function()
         "GalaxyParam with no label created!")
     checkException(GalaxyParam(name="name", type="foo", format="bla"),
         "don't use format unless type is data or output")
+    checkException(GalaxyParam(name="name", type="data", format="gfkghfkjghfkgjhfjg"),
+        "use only supported formats")
     checkException(GalaxyParam(name="name", type="foo", label="label", size=12),
         "only use size if type is text")
     checkException(GalaxyParam(name="n", type="t", label="l", max=21),
@@ -31,11 +33,8 @@ test_validity_method <- function()
         label="l", max=1, min=21),
         "min is larger than max")
     checkException(GalaxyParam(name="n", type="t", label="l",
-        force_select="true"),
+        force_select=TRUE),
         "force_select can only be used if type is select.")
-    checkException(GalaxyParam(name="n", type="select", label="l",
-        force_select="true enough", selectoptions=list(a="one")),
-        "force_select must have value of 'true' or 'false'")
     checkException(GalaxyParam(name="n", type="t", label="l",
         display="radio"),
         "display can only be used if type is select.")
@@ -45,6 +44,13 @@ test_validity_method <- function()
     checkException(GalaxyParam(name="n", type="select", label="l",
         display="tv", selectoptions=list("one")),
         "all elements of selectoptions must be named")
+    checkException(GalaxyParam(name="n", type="text", label="l",
+        display="tv", selectoptions=list("one")),
+        "selectoptions can only be used if type is select.")
+    
+    ## Test the GalaxyOutput validity method
+    checkException(GalaxyOutput(file="bogus.filetype"),
+        "use only supported formats")
     
 }
 
@@ -62,23 +68,23 @@ test_galaxy <- function()
         GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
         GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
         GalaxyParam(name="plotTitle", type="text", label="Plot Title"),
-        GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"),
-        GalaxyParam(name="outputfile1", type="output", format="csv"),
-        GalaxyParam(name="outputfile2", type="output", format="pdf"))
+        GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
 
-    galaxy(functionToGalaxify, func.name,
+    galaxy(functionToGalaxify,
         manpage="functionToGalaxify",
-        galaxy.home=galaxy.home, name="Add", 
+        galaxyOutputs=list(GalaxyOutput("outputfile1.csv"),
+            GalaxyOutput("outputfile2.pdf")),
+        name="Add",
         package="RGalaxy",
-        param.list=params, tool.dir=tool.dir,
+        paramList=params,
         version=packageDescription("RGalaxy")$Version,
-        section.name="Test Section",
-        section.id="testSectionId")
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section", 
+            "testSectionId"))
     
-    R_file <- file.path(galaxy.home, "tools", tool.dir,
-        paste(func.name, "R", sep="."))
-    XML_file <- file.path(galaxy.home, "tools", tool.dir, 
-        paste(func.name, "xml", sep="."))
+    R_file <- file.path(galaxyHome, "tools", toolDir,
+        paste(funcName, "R", sep="."))
+    XML_file <- file.path(galaxyHome, "tools", toolDir, 
+        paste(funcName, "xml", sep="."))
     
     checkTrue(file.exists(R_file),
         paste("R script", R_file, "does not exist!"))
@@ -96,24 +102,24 @@ test_galaxy_on_function_not_in_package <- function()
         GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
         GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
         GalaxyParam(name="plotTitle", type="text", label="Plot Title"),
-        GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"),
-        GalaxyParam(name="outputfile1", type="output", format="csv"),
-        GalaxyParam(name="outputfile2", type="output", format="pdf"))
+        GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
 
     source(system.file("extdata", "functionToGalaxify2.R", package="RGalaxy"))
     manpage <- system.file("extdata", "functionToGalaxify2.Rd", package="RGalaxy")
-    galaxy(functionToGalaxify, func.name,
+    galaxy(functionToGalaxify,
         manpage=manpage,
-        galaxy.home=galaxy.home, name="Add", 
-        param.list=params, tool.dir=tool.dir,
+        galaxyOutputs=list(GalaxyOutput("outputfile1.csv"),
+            GalaxyOutput("outputfile2.pdf")),
+        name="Add", 
+        paramList=params,
         version=packageDescription("RGalaxy")$Version,
-        section.name="Test Section",
-        section.id="testSectionId")
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+            "testSectionId"))
     
-    R_file <- file.path(galaxy.home, "tools", tool.dir,
-        paste(func.name, "R", sep="."))
-    XML_file <- file.path(galaxy.home, "tools", tool.dir, 
-        paste(func.name, "xml", sep="."))
+    R_file <- file.path(galaxyHome, "tools", toolDir,
+        paste(funcName, "R", sep="."))
+    XML_file <- file.path(galaxyHome, "tools", toolDir, 
+        paste(funcName, "xml", sep="."))
     
     checkTrue(file.exists(R_file),
         paste("R script", R_file, "does not exist!"))
@@ -130,36 +136,36 @@ test_galaxy_on_function_not_in_package <- function()
 test_missing_parameters <- function()
 {
     checkException(galaxy(), "Can't call galaxy() with no arguments")
-    ## todo add more...
 }
 
-test_galaxy_with_select <- function() 
+test_galaxy_with_select <- function()
 {
     selectoptions <- list("TitleA"="A", "TitleB"="B")
     params <- list(
         GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
         GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
         GalaxyParam(name="plotTitle", type="select", label="Plot Title",
-            selectoptions=selectoptions),
-        GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"),
-        GalaxyParam(name="outputfile1", type="output", format="csv"),
-        GalaxyParam(name="outputfile2", type="output", format="pdf"))
+            selectoptions=selectoptions, force_select=TRUE),
+        GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
 
-    galaxy(functionToGalaxify, func.name,
+        
+    galaxy(functionToGalaxify,
         manpage="functionToGalaxify",
-        galaxy.home=galaxy.home, name="Add", 
+        galaxyOutputs=list(GalaxyOutput("outputfile1.csv"),
+            GalaxyOutput("outputfile2.pdf")),
+        name="Add", 
         package="RGalaxy",
-        param.list=params, tool.dir=tool.dir,
+        paramList=params,
         version=packageDescription("RGalaxy")$Version,
-        section.name="Test Section",
-        section.id="testSectionId")
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+            "testSectionId"))
     
-    destDir <- file.path(galaxy.home, "tools", tool.dir)
+    destDir <- file.path(galaxyHome, "tools", toolDir)
     
     R_file <- file.path(destDir,
-        paste(func.name, "R", sep="."))
+        paste(funcName, "R", sep="."))
     XML_file <- file.path(destDir, 
-        paste(func.name, "xml", sep="."))
+        paste(funcName, "xml", sep="."))
     
     checkTrue(file.exists(R_file),
         paste("R script", R_file, "does not exist!"))
@@ -179,6 +185,10 @@ test_galaxy_with_select <- function()
         "/tool/inputs/param[@name='plotSubTitle']", xmlAttrs)[[1]]["value"],
         "My subtitle", "value attribute does not have argument default value",
         checkNames=FALSE)
+    checkEquals(xpathApply(doc,
+        "/tool/inputs/param[@name='plotTitle']", 
+        xmlAttrs)[[1]]["force_select"], "TRUE",
+        "force_select is not TRUE", checkNames=FALSE)
     checkTrue(!any(is.null(unlist(optionAttrs))), 
         "missing value attribute on option node(s)")
     

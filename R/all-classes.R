@@ -1,12 +1,48 @@
-setRefClass("MsgClass",
+    setRefClass("MsgClass",
     fields=list(
         name="character"
     )
 )
 
 
+setClass("Galaxy")
+
+setClass("GalaxyConfig", contains="Galaxy",
+    representation("galaxyHome"="character",
+        "toolDir"="character",
+        "sectionName"="character",
+        "sectionId"="character"),
+        validity=function(object){
+            rc <- new("MsgClass", name=character(0))
+
+            e <- function(m) {
+                rc$name <- c(rc$name, m)
+            }
+            
+            if( (!file.exists(object@galaxyHome)) && 
+                (!file.info(galaxyHome)$isdir) )
+            {
+                e(paste("Directory", object@galaxyHome,
+                    "does not exist or is not a directory."))
+            }
+            
+            if(!nzchar(object@toolDir)) e("toolDir cannot be empty.")
+            if(!nzchar(object@sectionName)) e("sectionName cannot be empty.")
+            if(!nzchar(object@sectionId)) e("sectionId cannot be empty.")
+            
+            
+            if (length(rc$name) == 0) TRUE else rc$name
+            
+        })
+
+GalaxyConfig <- function(galaxyHome, toolDir, sectionName, sectionId)
+{
+    new("GalaxyConfig", galaxyHome=galaxyHome, toolDir=toolDir,
+        sectionName=sectionName, sectionId=sectionId)
+}
 
 setClass("GalaxyParam",
+## TODO, name comes from list
     representation(name="character", ## from Rd file (?)
         type="character",
         label="character", 
@@ -16,18 +52,18 @@ setClass("GalaxyParam",
         max="numeric",
         format="character",
         ## data_ref: not supported
-        force_select="character", ## one of "true" or "false"
+        force_select="logical", 
         display="character", ## one of: checkboxes, radio
         ## multiple: not supported
         ## numerical: not supported
         ## hierarchy: not supported
-        checked="character", ## one of: yes, true, on
+        checked="logical",
         ## truevalue: not supported
         ## falsevalue: not supported
         size="numeric",
         selectoptions="list"
         
-    ), validity=function(object){
+    ), contains="Galaxy", validity=function(object){
         
         empty <- function(x) {
             return(length(slot(object, x))==0)
@@ -45,18 +81,21 @@ setClass("GalaxyParam",
                 e(paste("Required field", requiredField, "is missing."))
         }
         
-        
-        if(object@type == "output") {
-            if (empty("format"))
-                e("'format' is required.")
-        } else {
-            if (empty("label"))
-                e("'label' is required!")
+        if(empty("type")) {
+            e("type cannot be empty")
         }
         
-        if((!object@type %in% c("data", "output")) && !empty("format"))
-            e("'format' is only used when 'type' is 'data' or 'output'.")
+        if(object@type == "output") {
+            e("output is an invalid type, use GalaxyOutput parameters")
+        }
         
+        if((!object@type %in% c("output")) && !empty("format"))
+            e("'format' is only used when 'type' is 'data'.")
+        
+        ## FIXME: get the user's actual galaxy home and look there 
+        ## for supported extensions
+        if (!empty("format") && !object@format %in% getSupportedExtensions())
+            e(paste("The format", object@format, "is not supported."))
         
         if ((!empty("size")) && (!object@type=="text"))
             e("'type' must be 'text' if 'size' is specified.")
@@ -68,13 +107,10 @@ setClass("GalaxyParam",
             (!object@max > object@min))
                 e("'max' must be larger than 'min'.")
         
-        if (!empty("force_select"))
+        if (length(object@force_select))
         {
             if (!object@type=="select")
                 e("'force_select' can only be used when 'type' is 'select'.")
-                
-            if (!object@force_select %in% c("true", "false"))
-                e("'force_select' value must be 'true' or 'false'.")
         }
         
 
@@ -89,6 +125,11 @@ setClass("GalaxyParam",
         
         if (object@type=="select" && empty("selectoptions"))
             e("if type is select, selectoptions must be provided")
+
+
+        if ((!object@type=="select") && (!empty("selectoptions")))
+            e("selectoptions should only be provided if type is select")
+
         
         if (!empty("selectoptions"))
         {
@@ -108,9 +149,9 @@ GalaxyParam <- function(name=character(0),
         min=numeric(0), 
         max=numeric(0),
         format=character(0),
-        force_select=character(0),
+        force_select=logical(0),
         display=character(0),
-        checked=character(0),
+        checked=logical(0),
         size=numeric(0),
         selectoptions=list())
 {
@@ -119,8 +160,57 @@ GalaxyParam <- function(name=character(0),
         force_select=force_select, display=display, checked=checked,
         size=size, selectoptions=selectoptions)
 }
+
+setClass("GalaxyOutput", representation(file="character", format="character"),
+    contains="Galaxy", validity=function(object){
+        empty <- function(x) {
+            return(length(slot(object, x))==0)
+        }
+        rc <- new("MsgClass", name=character(0))
+        e <- function(m) {
+            rc$name <- c(rc$name, m)
+        }
+
+
+        empty <- function(x) {
+            return(length(slot(object, x))==0)
+        }
+        rc <- new("MsgClass", name=character(0))
+        e <- function(m) {
+            rc$name <- c(rc$name, m)
+        }
+
+        if (empty(object@format)) {
+            e("Format must be supplied.")
+        }
+
+        if (!object@format %in% getSupportedExtensions())
+            e(paste("The format", object@format, "is not supported"))
+
+        if (empty(object@file)) {
+            e("file must be supplied.")
+        }
+
+        msg <- rc$name
+        if (length(msg) == 0) TRUE else msg
+
+
+
+        msg <- rc$name
+        if (length(msg) == 0) TRUE else msg
+
+    })
+
+GalaxyOutput <-
+    function(file, format=sub("^.*\\.(.*)$", "\\1", file))
+{
+    printf("file  %s, format=%s", file, format)
+    new("GalaxyOutput", file=file, format=format)
+}
+
+setMethod(show, "GalaxyOutput", function(object) {
+    cat("class:", class(object), "\n")
+    print(data.frame(format=object@format, file=object@file))
+})
     
-## todo add a show method:
-#setMethod("show", GalaxyParam, function(object){
-#})
 

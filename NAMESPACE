@@ -1,6 +1,3 @@
-export(galaxy)
-export(functionToGalaxify)
-export(GalaxyParam)
-exportClass(GalaxyParam)
-
+export(galaxy, functionToGalaxify, GalaxyParam, GalaxyConfig, GalaxyOutput)
+exportClass(GalaxyParam, GalaxyConfig, GalaxyOutput)
 import(BiocGenerics)

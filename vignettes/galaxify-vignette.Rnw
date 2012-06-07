@@ -108,13 +108,13 @@ Now that you have written a function that follows the best practices
 described above, you can make it available to Galaxy as follows:
 
 <<hidden-setup, echo=false, results=hide>>=
-galaxy.home <- getwd()
-tool.dir <- "RGalaxy_test_tool"
-func.name <- "functionToGalaxify"
+galaxyHome <- getwd()
+toolDir <- "RGalaxy_test_tool"
+funcName <- "functionToGalaxify"
 
-#dir.create(galaxy.home, recursive=TRUE, showWarnings=FALSE)
+#dir.create(galaxyHome, recursive=TRUE, showWarnings=FALSE)
 file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
-    file.path(galaxy.home, "tool_conf.xml"), overwrite=FALSE)
+    file.path(galaxyHome, "tool_conf.xml"), overwrite=FALSE)
 
 @
 
@@ -125,9 +125,7 @@ params <- list(
     GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
     GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
     GalaxyParam(name="plotTitle", type="text", label="Plot Title"),
-    GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"),
-    GalaxyParam(name="outputfile1", type="output", format="csv"),
-    GalaxyParam(name="outputfile2", type="output", format="pdf"))
+    GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
 @
 
 Now we can invoke the \galaxy{} function to create/modify the necessary
@@ -135,15 +133,15 @@ XML:
 
 <<galaxy-function, results=hide>>=
 galaxy(functionToGalaxify,
-    "functionToGalaxify",
     manpage="functionToGalaxify",
-    galaxy.home= getwd(), 
+    galaxyOutputs=list(GalaxyOutput("outputfile1.csv"),
+        GalaxyOutput("outputfile2.pdf")),
     name="Add", 
     package="RGalaxy",
-    param.list=params,
-    tool.dir="mytool",
-    section.name="Test Section",
-    section.id="testSectionId")
+    paramList=params,
+    galaxyConfig=GalaxyConfig(getwd(), "mytool", "Test Section",
+        "testSectionId")
+    )
 @
 
 \section{Did it work?}
