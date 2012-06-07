@@ -23,7 +23,6 @@ editToolConfXML <-
     saveXML(doc, file=toolConfFile)
 }
 
-## FIXME - do GalaxyOutput params need to be named?
 galaxy <- 
     function(func, manpage, ..., name, package=NULL, is.exported=NULL,
         version, galaxyConfig)
@@ -113,11 +112,10 @@ galaxy <-
 
 
             xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, name)
-            ## FIXME - should 'label' be required, not optional?
-            optionalFields <- c("label", "value", "min", "max",
+            attributeFields <- c("label", "value", "min", "max",
                 "force_select", "display", "checked", "size")
 
-            for (field in optionalFields)
+            for (field in attributelFields)
             {
                 value <- as.character(slot(item, field))
                 if (length(value) > 0)
@@ -196,12 +194,6 @@ createScriptFile <- function(scriptFileName, func, funcName, paramList, package,
     scat(paste("if (!length(args)==", length(paramList), ")",
       "stop('Wrong number of command-line arguments provided.')"))
 
-    toBoolean <- function(x) ## FIXME remove this
-    {
-        if (tolower(x) %in% c("yes", "on", "true")) return(TRUE)
-        if (tolower(x) %in% c("no", "off", "false")) return(FALSE)
-        return(NA)
-    }
     
     itemNum = 1
     for(name in names(paramList))
