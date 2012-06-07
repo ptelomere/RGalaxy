@@ -10,8 +10,8 @@
 }
 
 \usage{
-galaxy(func, manpage, galaxyOutputs, name, package=NULL, is.exported=NULL,
-    paramList, version, galaxyConfig)
+galaxy(func, manpage, ..., name, package=NULL, is.exported=NULL,
+    version, galaxyConfig)
 }
 
 \arguments{
@@ -26,10 +26,10 @@ galaxy(func, manpage, galaxyOutputs, name, package=NULL, is.exported=NULL,
     The full path to the Rd-formatted manual page for the function, 
     or if \code{package} is specified, an alias that will pull up that manpage.
   }
-  \item{galaxyOutputs}{
+  \item{...}{
     \bold{Required.}
-    A list of one or more \code{\link{GalaxyOutput}} objects containing
-    the names of files produced by \code{func}.
+    A list of at least one \code{\link{GalaxyParam}} object and at
+    least one \code{\link{GalaxyOutput}} objects.
   }
   \item{name}{
     \bold{Required.}
@@ -43,11 +43,6 @@ galaxy(func, manpage, galaxyOutputs, name, package=NULL, is.exported=NULL,
   \item{is.exported}{
     If \code{package} is supplied, a logical indicating whether \code{func} is 
     exported from \code{package}.
-  }
-  \item{paramList}{
-    \bold{Required.}
-    A named list of \code{\link{GalaxyParam}} objects describing 
-    each parameter to the function.
   }
   \item{version}{
     The version of this function. If \code{package} is \code{TRUE},
@@ -78,19 +73,16 @@ file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
     file.path(galaxyHome, "tool_conf.xml"), overwrite=FALSE)
 
 
-params <- list(
-    GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
-    GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
-    GalaxyParam(name="plotTitle", type="text", label="Plot Title"),
-    GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
-
 galaxy(functionToGalaxify,
     manpage="functionToGalaxify",
-    galaxyOutputs=list(GalaxyOutput("outputfile1.csv"),
-        GalaxyOutput("outputfile2.csv")),
+    inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+    inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+    plotTitle=GalaxyParam(type="text", label="Plot Title"),
+    plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+    outputfile1=GalaxyOutput("csv"),
+    outputfile2=GalaxyOutput("pdf"),
     name="Add",
     package="RGalaxy",
-    paramList=params,
     version=packageDescription("RGalaxy")$Version,
     galaxyConfig=GalaxyConfig(galaxyHome, "mytool", "Test Section", "testSectionId"))
 

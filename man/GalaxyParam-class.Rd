@@ -11,15 +11,11 @@
     that is exposed in Galaxy.
 }
 \usage{
-GalaxyParam(name, type, label, value, min, max, format, force_select, display,
+GalaxyParam(type, label, value, min, max, format, force_select, display,
     checked, size, selectoptions)
 }
 
 \arguments{
-    \item{name}{
-        \bold{Required.}
-        The name of the parameter.
-    }
     \item{type}{
         \bold{Required.}
         The type of the parameter. One of:
@@ -81,16 +77,16 @@ No methods defined with class "GalaxyParam" in the signature.
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{link{galaxy}}, \code{\link{GalaxyConfig}}
+\code{link{galaxy}}, \code{\link{GalaxyConfig}}, \code{link{GalaxyOutput}}
 %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
 }
 \examples{
 params <- list(
-    GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
-    GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
-    GalaxyParam(name="plotTitle", type="text", label="Plot Title"),
-    GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
+    inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+    inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+    plotTitle=GalaxyParam(type="text", label="Plot Title"),
+    plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"))
 
 
 }

@@ -42,8 +42,7 @@ GalaxyConfig <- function(galaxyHome, toolDir, sectionName, sectionId)
 }
 
 setClass("GalaxyParam",
-## TODO, name comes from list
-    representation(name="character", ## from Rd file (?)
+    representation( 
         type="character",
         label="character", 
         value="character", ## from args(func) ??
@@ -75,7 +74,7 @@ setClass("GalaxyParam",
             rc$name <- c(rc$name, m)
         }
         
-        for (requiredField in c("name", "type"))
+        for (requiredField in c("type", "label"))
         {
             if (empty(requiredField))
                 e(paste("Required field", requiredField, "is missing."))
@@ -142,7 +141,7 @@ setClass("GalaxyParam",
         if (length(msg) == 0) TRUE else msg
     })
 
-GalaxyParam <- function(name=character(0),
+GalaxyParam <- function(
         type=character(0),
         label=character(0), 
         value=character(0),
@@ -155,13 +154,13 @@ GalaxyParam <- function(name=character(0),
         size=numeric(0),
         selectoptions=list())
 {
-    new("GalaxyParam", name=name, type=type, label=label,
+    new("GalaxyParam", type=type, label=label,
         value=value, min=min, max=max, format=format,
         force_select=force_select, display=display, checked=checked,
         size=size, selectoptions=selectoptions)
 }
 
-setClass("GalaxyOutput", representation(file="character", format="character"),
+setClass("GalaxyOutput", representation(format="character"),
     contains="Galaxy", validity=function(object){
         empty <- function(x) {
             return(length(slot(object, x))==0)
@@ -171,30 +170,15 @@ setClass("GalaxyOutput", representation(file="character", format="character"),
             rc$name <- c(rc$name, m)
         }
 
-
-        empty <- function(x) {
-            return(length(slot(object, x))==0)
-        }
-        rc <- new("MsgClass", name=character(0))
-        e <- function(m) {
-            rc$name <- c(rc$name, m)
-        }
-
-        if (empty(object@format)) {
+        if (empty("format")) {
             e("Format must be supplied.")
         }
 
+
         if (!object@format %in% getSupportedExtensions())
+        {
             e(paste("The format", object@format, "is not supported"))
-
-        if (empty(object@file)) {
-            e("file must be supplied.")
         }
-
-        msg <- rc$name
-        if (length(msg) == 0) TRUE else msg
-
-
 
         msg <- rc$name
         if (length(msg) == 0) TRUE else msg
@@ -202,15 +186,10 @@ setClass("GalaxyOutput", representation(file="character", format="character"),
     })
 
 GalaxyOutput <-
-    function(file, format=sub("^.*\\.(.*)$", "\\1", file))
+    function(format)
 {
-    printf("file  %s, format=%s", file, format)
-    new("GalaxyOutput", file=file, format=format)
+    new("GalaxyOutput", format=format)
 }
 
-setMethod(show, "GalaxyOutput", function(object) {
-    cat("class:", class(object), "\n")
-    print(data.frame(format=object@format, file=object@file))
-})
     
 

@@ -4,7 +4,7 @@
 \title{Add two matrices}
 
 \description{
-    An example function that can be made into a Galaxy tool
+    An example function that can be made into a Galaxy tool.
     Reads matrices from two tab-delimited files, adds them, and writes
     the result to a comma-separated file and a PDF plot.
 }
@@ -41,7 +41,7 @@ functionToGalaxify(inputfile1, inputfile2, plotTitle,
 
 \seealso{
     \code{\link{galaxy}}, \code{\link{GalaxyParam}},
-    \code{\link{GalaxyConfig}}
+    \code{\link{GalaxyConfig}}, \code{\link{GalaxyOutput}}
 }
 \details{
     This trivial method illustrates some best practices to use when writing

@@ -23,14 +23,14 @@ editToolConfXML <-
     saveXML(doc, file=toolConfFile)
 }
 
-
+## FIXME - do GalaxyOutput params need to be named?
 galaxy <- 
-    function(func, manpage, galaxyOutputs, name, package=NULL, is.exported=NULL,
-        paramList, version, galaxyConfig)
+    function(func, manpage, ..., name, package=NULL, is.exported=NULL,
+        version, galaxyConfig)
 {
     
-    requiredFields <- c("func", "manpage", "galaxyOutputs", "name",
-        "paramList", "galaxyConfig")
+    requiredFields <- c("func", "manpage", "name",
+        "galaxyConfig")
     missingFields <- character(0)
     for (requiredField in requiredFields)
     {
@@ -47,6 +47,15 @@ galaxy <-
         stop(msg)
     }
 
+    paramList <- list(...)
+    if (!length(paramList)) {
+        stop("You must pass parameters to galaxy().")
+    }
+    
+    if (any(which(nchar(names(paramList))==0)) || is.null(names(paramList)))
+    {
+        stop("All ... arguments to galaxy() must be named.")
+    }
 
     funcName <- deparse(substitute(func))
 
@@ -77,9 +86,9 @@ galaxy <-
         parent=xml)
     
     commandText <- paste(funcName, ".R ", sep="")
-    for (item in paramList)
+    for (name in names(paramList))
     {
-        commandText <- paste(commandText, '"$', item@name, '" ', sep="")
+        commandText <- paste(commandText, '"$', name, '" ', sep="")
     }
     commandText <- paste(commandText, "2>&1", sep="")
     
@@ -87,50 +96,55 @@ galaxy <-
         parent=xml)
     xmlAttrs(commandNode)["interpreter"] <- "Rscript"
     inputsNode <- newXMLNode("inputs", parent=xml)
-    
-    
-    for (item in paramList)
-    {
-        paramNode <- newXMLNode("param", parent=inputsNode)
-        xmlAttrs(paramNode)["name"] <- item@name
-        xmlAttrs(paramNode)["type"] <- item@type
-        
-        if(length(item@value)==0 && nchar(formals(func)[item@name])>0)
-            item@value <- unlist(formals(func)[item@name])
-        
-        
-        xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, item@name)
-        ## FIXME - should 'label' be required, not optional?
-        optionalFields <- c("label", "value", "min", "max",
-            "force_select", "display", "checked", "size")
-            
-        for (field in optionalFields)
-        {
-            value <- as.character(slot(item, field))
-            if (length(value) > 0)
-                xmlAttrs(paramNode)[field] <- value
-        }
-        if (item@type=="select")
-        {
-            for (option in names(item@selectoptions))
-            {
-                value <- item@selectoptions[option]
-                optionNode <- newXMLNode("option", option,
-                    parent=paramNode)
-                xmlAttrs(optionNode)["value"] <- value
-            }
-            
-        }
-        invisible(NULL)
-    }
-    
     outputsNode <- newXMLNode("outputs", parent=xml)
-    for (item in galaxyOutputs)
+    
+    
+    for (name in names(paramList))
     {
-        dataNode <- newXMLNode("data", parent=outputsNode)
-        xmlAttrs(dataNode)["format"] <- item@format
-        xmlAttrs(dataNode)["name"] <- item@file
+        item <- paramList[name][[1]]
+        if (class(item) %in% "GalaxyParam")
+        {
+            paramNode <- newXMLNode("param", parent=inputsNode)
+            xmlAttrs(paramNode)["name"] <- name
+            xmlAttrs(paramNode)["type"] <- item@type
+
+            if(length(item@value)==0 && nchar(formals(func)[name])>0)
+                item@value <- unlist(formals(func)[name])
+
+
+            xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, name)
+            ## FIXME - should 'label' be required, not optional?
+            optionalFields <- c("label", "value", "min", "max",
+                "force_select", "display", "checked", "size")
+
+            for (field in optionalFields)
+            {
+                value <- as.character(slot(item, field))
+                if (length(value) > 0)
+                    xmlAttrs(paramNode)[field] <- value
+            }
+            if (item@type=="select")
+            {
+                for (option in names(item@selectoptions))
+                {
+                    value <- item@selectoptions[option]
+                    optionNode <- newXMLNode("option", option,
+                        parent=paramNode)
+                    xmlAttrs(optionNode)["value"] <- value
+                }
+
+            }
+            invisible(NULL)
+            
+        } else if (class(item) %in% "GalaxyOutput")
+        {
+            dataNode <- newXMLNode("data", parent=outputsNode)
+            xmlAttrs(dataNode)["format"] <- item@format
+            xmlAttrs(dataNode)["name"] <- name
+            
+        }
     }
+    
     
     
     ##testsNode <- newXMLNode("tests", parent=xml) ## TODO - enable these?
@@ -182,7 +196,7 @@ createScriptFile <- function(scriptFileName, func, funcName, paramList, package,
     scat(paste("if (!length(args)==", length(paramList), ")",
       "stop('Wrong number of command-line arguments provided.')"))
 
-    toBoolean <- function(x)
+    toBoolean <- function(x) ## FIXME remove this
     {
         if (tolower(x) %in% c("yes", "on", "true")) return(TRUE)
         if (tolower(x) %in% c("no", "off", "false")) return(FALSE)
@@ -190,16 +204,19 @@ createScriptFile <- function(scriptFileName, func, funcName, paramList, package,
     }
     
     itemNum = 1
-    for(item in paramList)
+    for(name in names(paramList))
     {
-        scat(sprintf("%s <- args[%d]", item@name, itemNum))
-        if (item@type == "integer")
+        item <- paramList[name][[1]]
+        ##sprintf("class of item is %s", class(item))
+        scat(sprintf("%s <- args[%d]", name, itemNum))
+        if (class(item) %in% "GalaxyParam")
         {
-            scat(sprintf("%s <- as.integer(%s)", item@name, item@name))
-        } else if (item@type == "float") {
-            scat(sprintf("%s <- as.numeric(%s)", item@name, item@name))
-        } else if (item@type == "boolean") {
-            scat(sprintf("%s <- %s", item@name, toBoolean(item@name)))
+            if (item@type == "integer")
+            {
+                scat(sprintf("%s <- as.integer(%s)", name, name))
+            } else if (item@type == "float") {
+                scat(sprintf("%s <- as.numeric(%s)", name, name))
+            }
         }
         itemNum <- itemNum + 1 
     }
@@ -226,9 +243,9 @@ createScriptFile <- function(scriptFileName, func, funcName, paramList, package,
     scat()
 
     fCall <- paste(funcName, "(", sep="")
-    arglist <- lapply(paramList, function(x)
+    arglist <- lapply(names(paramList), function(x)
     {
-        paste(x@name, "=", x@name, sep="")
+        paste(x, "=", x, sep="")
     })
     sArgslist <- paste(arglist, collapse=", ")
     fCall <- paste(fCall, sArgslist, ")", sep="")

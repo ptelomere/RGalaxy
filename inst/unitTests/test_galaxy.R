@@ -56,7 +56,7 @@ test_validity_method <- function()
 
 test_galaxy_param <- function()
 {
-    gp <- GalaxyParam(name="name", type="select", label="label",
+    gp <- GalaxyParam(type="select", label="label",
         selectoptions=list(a="one"))
     checkTrue(validObject(gp), "gp is not valid!")
     checkTrue(class(gp)=="GalaxyParam", "gp has wrong class!")
@@ -64,19 +64,17 @@ test_galaxy_param <- function()
 
 test_galaxy <- function() 
 {
-    params <- list(
-        GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
-        GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
-        GalaxyParam(name="plotTitle", type="text", label="Plot Title"),
-        GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
 
     galaxy(functionToGalaxify,
         manpage="functionToGalaxify",
-        galaxyOutputs=list(GalaxyOutput("outputfile1.csv"),
-            GalaxyOutput("outputfile2.pdf")),
+        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+        plotTitle=GalaxyParam(type="text", label="Plot Title"),
+        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+        outputfile1=GalaxyOutput("csv"),
+        outputfile2=GalaxyOutput("pdf"),
         name="Add",
         package="RGalaxy",
-        paramList=params,
         version=packageDescription("RGalaxy")$Version,
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section", 
             "testSectionId"))
@@ -98,20 +96,18 @@ test_galaxy <- function()
 
 test_galaxy_on_function_not_in_package <- function() 
 {
-    params <- list(
-        GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
-        GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
-        GalaxyParam(name="plotTitle", type="text", label="Plot Title"),
-        GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
 
     source(system.file("extdata", "functionToGalaxify2.R", package="RGalaxy"))
     manpage <- system.file("extdata", "functionToGalaxify2.Rd", package="RGalaxy")
     galaxy(functionToGalaxify,
         manpage=manpage,
-        galaxyOutputs=list(GalaxyOutput("outputfile1.csv"),
-            GalaxyOutput("outputfile2.pdf")),
+        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+        plotTitle=GalaxyParam(type="text", label="Plot Title"),
+        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+        outputfile1=GalaxyOutput("csv"),
+        outputfile2=GalaxyOutput("pdf"),
         name="Add", 
-        paramList=params,
         version=packageDescription("RGalaxy")$Version,
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
             "testSectionId"))
@@ -141,21 +137,18 @@ test_missing_parameters <- function()
 test_galaxy_with_select <- function()
 {
     selectoptions <- list("TitleA"="A", "TitleB"="B")
-    params <- list(
-        GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
-        GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
-        GalaxyParam(name="plotTitle", type="select", label="Plot Title",
-            selectoptions=selectoptions, force_select=TRUE),
-        GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
-
         
     galaxy(functionToGalaxify,
         manpage="functionToGalaxify",
-        galaxyOutputs=list(GalaxyOutput("outputfile1.csv"),
-            GalaxyOutput("outputfile2.pdf")),
+        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+        plotTitle=GalaxyParam(type="select", label="Plot Title",
+            selectoptions=selectoptions, force_select=TRUE),
+        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+        outputfile1=GalaxyOutput("csv"),
+        outputfile2=GalaxyOutput("pdf"),
         name="Add", 
         package="RGalaxy",
-        paramList=params,
         version=packageDescription("RGalaxy")$Version,
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
             "testSectionId"))

@@ -118,27 +118,19 @@ file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
 
 @
 
-First, we have to tell \galaxy{} about the arguments to your function.
 
-<<galaxy-params>>=
-params <- list(
-    GalaxyParam(name="inputfile1", type="data", label="Matrix 1"),
-    GalaxyParam(name="inputfile2", type="data", label="Matrix 2"),
-    GalaxyParam(name="plotTitle", type="text", label="Plot Title"),
-    GalaxyParam(name="plotSubTitle", type="text", label="Plot Subtitle"))
-@
-
-Now we can invoke the \galaxy{} function to create/modify the necessary
-XML:
 
 <<galaxy-function, results=hide>>=
 galaxy(functionToGalaxify,
     manpage="functionToGalaxify",
-    galaxyOutputs=list(GalaxyOutput("outputfile1.csv"),
-        GalaxyOutput("outputfile2.pdf")),
+    inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+    inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+    plotTitle=GalaxyParam(type="text", label="Plot Title"),
+    plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+    outputfile1=GalaxyOutput("csv"),
+    outputfile2=GalaxyOutput("pdf"),
     name="Add", 
     package="RGalaxy",
-    paramList=params,
     galaxyConfig=GalaxyConfig(getwd(), "mytool", "Test Section",
         "testSectionId")
     )
