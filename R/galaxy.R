@@ -115,7 +115,7 @@ galaxy <-
             attributeFields <- c("label", "value", "min", "max",
                 "force_select", "display", "checked", "size")
 
-            for (field in attributelFields)
+            for (field in attributeFields)
             {
                 value <- as.character(slot(item, field))
                 if (length(value) > 0)
