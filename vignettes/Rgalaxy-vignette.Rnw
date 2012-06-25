@@ -52,7 +52,7 @@ message. The Galaxy user will see these messages if an error occurs.
 
 Functions which take datasets as input should accept as arguments
 the filenames pointing to those datasets. The Galaxy user interface
-will allow the user to chose the dataset graphically.
+will allow the user to choose the dataset graphically.
 
 Return values of functions are ignored. Function output should be
 written to one or more files, and the names of these files should
