@@ -48,24 +48,25 @@ remaining information as arguments to the \galaxy{} function).
 
 A function that you wish to expose in Galaxy has certain limitations.
 
-The function's arguments must include the names of its input and output
-files (function return values are ignored).
+\begin{itemize}
+\item {The function's arguments must include the names of its input and output
+files (function return values are ignored).}
 
-Any error conditions
-should be handled with \Rcode{stop} with a useful/informative error
-message. The Galaxy user will see these messages if an error occurs.
+\item {Any error conditions should be handled with \Rcode{stop} with a
+useful/informative error message. The Galaxy user will see these
+messages if an error occurs. }
 
-Functions which take datasets as input should accept as arguments
+\item {Functions which take datasets as input should accept as arguments
 the filenames pointing to those datasets. The Galaxy user interface
-will allow the user to choose the dataset graphically.
+will allow the user to choose the dataset graphically.}
 
-Return values of functions are ignored. Function output should be
+\item {Return values of functions are ignored. Function output should be
 written to one or more files, and the names of these files should
-be passed into the function as arguments.
+be passed into the function as arguments.}
 
-Functions should be documented with a manual page. \galaxy{}
+\item {Functions should be documented with a manual page. \galaxy{}
 will use this manual page to fill in relevant sections of the
-Galaxy XML file. The following sections of the man page are required:
+Galaxy XML file. The following sections of the man page are required: 
 
 \begin{itemize}
 \item {\bf alias}
@@ -73,7 +74,10 @@ Galaxy XML file. The following sections of the man page are required:
 \item {\bf description}
 \item {\bf arguments} - each argument must be documented
 \item {\bf details}
+\end{itemize} }
+
 \end{itemize}
+
 
 The following example illustrates these best practices (this function
 is in the \RGalaxy{} package under the name \Rcode{functionToGalaxify}:
