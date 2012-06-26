@@ -134,6 +134,56 @@ test_missing_parameters <- function()
     checkException(galaxy(), "Can't call galaxy() with no arguments")
 }
 
+
+test_galaxy_sanity_checks <- function()
+{
+    selectoptions <- list("TitleA"="A", "TitleB"="B")
+    
+    checkException(galaxy(functionToGalaxify,
+        manpage="functionToGalaxify",
+        outputfile1=GalaxyOutput("csv"),
+        outputfile2=GalaxyOutput("pdf"),
+        name="Add", 
+        package="RGalaxy",
+        version=packageDescription("RGalaxy")$Version,
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+            "testSectionId"),
+            "galaxy() got no GalaxyParam objects but did not throw an exception")
+    )
+    
+    checkException(galaxy(functionToGalaxify,
+        manpage="functionToGalaxify",
+        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+        plotTitle=GalaxyParam(type="select", label="Plot Title",
+            selectoptions=selectoptions, force_select=TRUE),
+        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+        name="Add", 
+        package="RGalaxy",
+        version=packageDescription("RGalaxy")$Version,
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+            "testSectionId")),
+            "galaxy() got no GalaxyOutput objects but did not throw an exception")
+
+
+    checkException(galaxy(galaxy(functionToGalaxify,
+        manpage="functionToGalaxify",
+        blablabla=GalaxyParam(type="data", label="Matrix 1"),
+        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+        plotTitle=GalaxyParam(type="select", label="Plot Title",
+            selectoptions=selectoptions, force_select=TRUE),
+        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+        outputfile1=GalaxyOutput("csv"),
+        outputfile2=GalaxyOutput("pdf"),
+        name="Add", 
+        package="RGalaxy",
+        version=packageDescription("RGalaxy")$Version,
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+            "testSectionId"))),
+            "function parameters and galaxy() named parameters do not match")
+    
+}
+
 test_galaxy_with_select <- function()
 {
     selectoptions <- list("TitleA"="A", "TitleB"="B")

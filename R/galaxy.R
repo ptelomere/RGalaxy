@@ -51,6 +51,22 @@ galaxy <-
         stop("You must pass parameters to galaxy().")
     }
     
+    if (!suppressWarnings(any(lapply(paramList,
+        function(x)class(x)=="GalaxyParam"))))
+    {
+        stop(paste("You must pass one GalaxyParam object",
+            "for each parameter to your function."))
+    }
+    
+    if (!suppressWarnings(any(lapply(paramList,
+        function(x)class(x)=="GalaxyOutput"))))
+    {
+        stop(paste("You must supply at least one GalaxyOutput",
+            "object."))
+    }
+
+    
+    
     if (any(which(nchar(names(paramList))==0)) || is.null(names(paramList)))
     {
         stop("All ... arguments to galaxy() must be named.")
@@ -224,8 +240,13 @@ createScriptFile <- function(scriptFileName, func, funcName, paramList, package,
         }
     }
     
-
-
+    
+    existingFuncParams <- sort(names(formals(funcName)))
+    proposedFuncParams <- sort(names(paramList))
+    if (!all.equal(existingFuncParams, proposedFuncParams)) {
+        stop(paste("The named arguments you passed do not match",
+        "the arguments accepted by your function."))
+    }
     
     scat()
     

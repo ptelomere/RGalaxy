@@ -46,6 +46,11 @@ remaining information as arguments to the \galaxy{} function).
 
 \section{Best Practices For Writing 'Galaxifiable' Functions}
 
+A function that you wish to expose in Galaxy has certain limitations.
+
+The function's arguments must include the names of its input and output
+files (function return values are ignored).
+
 Any error conditions
 should be handled with \Rcode{stop} with a useful/informative error
 message. The Galaxy user will see these messages if an error occurs.
@@ -78,6 +83,18 @@ is in the \RGalaxy{} package under the name \Rcode{functionToGalaxify}:
 library(RGalaxy)
 show(functionToGalaxify)
 @
+
+\section{Exposing a package in Galaxy}
+
+Because of the constraints above, most existing R functions will not 
+immediately work in Galaxy; you'll need to write a simple wrapper 
+function to expose the functionality. If your wrapper function is part
+of a package (and you want the functions in that package to be available
+to your wrapper), set the \Rcode{package} parameter in your call to
+\Rcode{galaxy} to be the name of the package. If your wrapper is exported
+(in your NAMESPACE), set the \Rcode{exported} parameter to \Rcode{TRUE},
+otherwise set it to \Rcode{FALSE}.
+
 
 \section{Function Dependencies}
 
@@ -136,6 +153,31 @@ galaxy(functionToGalaxify,
     )
 @
 
+\section{About This Example}
+
+The \Rcode{galaxy} function takes a number of arguments, and this includes
+the names of the arguments of the function you are exposing in Galaxy.
+Those arguments are defined as instances of the \Rcode{GalaxyParam} class,
+which is aware of the rules of how function parameters in Galaxy must
+be defined (as documented at
+\url{http://wiki.g2.bx.psu.edu/Admin/Tools/Tool%20Config%20Syntax#A.3Cparam.3E_tag_set}).
+In Galaxy, unlike in R, you must specify the data type of each function
+argument; the link above (and the \Rcode{GalaxyParam} validity method)
+specifies the types you can use. 
+
+Galaxy functions create one or more output files, which are represented
+in the call to \Rcode{galaxy} by one or more named instances of the
+\Rcode{GalaxyOutput} class. This class constructor takes a single
+argument which is the file type of the output file. The list of supported
+types can be found in your Galaxy distribution, in the file
+datatypes\_conf.xml.sample. 
+
+The third and final class passed to the \Rcode{galaxy} function is
+the \Rcode{GalaxyConfig} class, which tells \Rcode{galaxy} where 
+you have Galaxy installed and where in the Galaxy hierarchy you want
+this function to be visible.
+
+
 \section{Did it work?}
 
 Let's check whether it worked. If Galaxy is running, interrupt it with control-C.
@@ -186,5 +228,42 @@ GALAXY\_HOME/tool\_conf.xml (or maybe just the section that was
 created by \galaxy{}), and the directory with your tool files
 (in our example, that was GALAXY\_HOME/mytool). 
 
+\section{A More Useful Example}
+
+Suppose you have some Affymetrix probe IDs and you want to look up the
+PFAM and SYMBOL names for them. It's quite easy to write a function
+to expose this in Galaxy:
+
+<<useful-example>>=
+probe_lookup <- function(probe_ids, outputfile)
+{
+    ## probe_ids can be something like "1002_f_at 1003_s_at"
+    library(hgu95av2.db)
+    ids <- strsplit(probe_ids, " ")[[1]]
+    results <- select(hgu95av2.db, keys= ids, cols=c("SYMBOL","PFAM"),
+        keytype="PROBEID")
+    write.csv(results, file=outputfile)
+}
+@
+
+Then, you can document the function with a man page:
+
+<<lookup-probe-lookup>>=
+system.file("extdata", "probe_lookup.rd", package="RGalaxy")
+@
+
+...you can expose the function in Galaxy as follows:
+<<expose-probe-function>>=
+galaxy(probe_lookup, 
+    name="Look Up Gene Names",
+    version="0.0.1",
+    manpage=system.file("extdata", "probe_lookup.rd", package="RGalaxy"),
+    probe_ids=GalaxyParam(type="text", label="Probe IDs (space separated)"),
+    outputfile=GalaxyOutput("csv"),
+    galaxyConfig=GalaxyConfig(galaxyHome, "probeTool", "Test Section",
+        "testSectionId")
+    )
+@
 
 \end{document}
+
