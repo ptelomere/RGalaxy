@@ -257,7 +257,7 @@ system.file("extdata", "probe_lookup.rd", package="RGalaxy")
 galaxy(probe_lookup, 
     name="Look Up Gene Names",
     version="0.0.1",
-    manpage=system.file("extdata", "probe_lookup.rd", package="RGalaxy"),
+    manpage=system.file("extdata", "probe_lookup.Rd", package="RGalaxy"),
     probe_ids=GalaxyParam(type="text", label="Probe IDs (space separated)"),
     outputfile=GalaxyOutput("csv"),
     galaxyConfig=GalaxyConfig(galaxyHome, "probeTool", "Test Section",
