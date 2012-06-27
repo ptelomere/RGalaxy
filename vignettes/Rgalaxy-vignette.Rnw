@@ -253,7 +253,7 @@ probe_lookup <- function(probe_ids, outputfile)
 Then, you can document the function with a man page:
 
 <<lookup-probe-lookup, results=hide>>=
-system.file("extdata", "probe_lookup.rd", package="RGalaxy")
+system.file("extdata", "probe_lookup.Rd", package="RGalaxy")
 @
 
 ...you can expose the function in Galaxy as follows:
