@@ -199,7 +199,7 @@ First you need to upload some sample data sets to Galaxy.
 
 In R, you can obtain the path to the data sets as follows:
 
-<<datasets>>=
+<<datasets, results=hide>>=
 system.file("extdata", "a.tsv", package="RGalaxy")
 system.file("extdata", "b.tsv", package="RGalaxy")
 @
@@ -252,12 +252,12 @@ probe_lookup <- function(probe_ids, outputfile)
 
 Then, you can document the function with a man page:
 
-<<lookup-probe-lookup>>=
+<<lookup-probe-lookup, results=hide>>=
 system.file("extdata", "probe_lookup.rd", package="RGalaxy")
 @
 
 ...you can expose the function in Galaxy as follows:
-<<expose-probe-function>>=
+<<expose-probe-function, results=hide>>=
 galaxy(probe_lookup, 
     name="Look Up Gene Names",
     version="0.0.1",
