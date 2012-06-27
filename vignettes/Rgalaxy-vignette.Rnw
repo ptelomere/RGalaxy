@@ -244,7 +244,7 @@ probe_lookup <- function(probe_ids, outputfile)
     ## probe_ids can be something like "1002_f_at 1003_s_at"
     library(hgu95av2.db)
     ids <- strsplit(probe_ids, " ")[[1]]
-    results <- select(hgu95av2.db, keys= ids, cols=c("SYMBOL","PFAM"),
+    results <- select(hgu95av2.db, keys=ids, cols=c("SYMBOL","PFAM"),
         keytype="PROBEID")
     write.csv(results, file=outputfile)
 }
