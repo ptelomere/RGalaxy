@@ -124,7 +124,7 @@ galaxy <-
             xmlAttrs(paramNode)["type"] <- item@type
 
             if(length(item@value)==0 && nchar(formals(func)[name])>0)
-                item@value <- unlist(formals(func)[name])
+                item@value <- as.character(unlist(formals(func)[name]))
 
 
             xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, name)
