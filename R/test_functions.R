@@ -19,6 +19,8 @@ functionToGalaxify <- function(inputfile1, inputfile2, plotTitle,
     write.csv(data3, file=outputfile1)
     
     pdf(outputfile2)
-    plot(data3)
+    if (missing(plotTitle)) plotTitle <- ""
+    plot(data3, main=plotTitle, sub=plotSubTitle)
     dev.off()
 }
+

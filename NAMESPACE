@@ -1,3 +1,5 @@
 export(galaxy, functionToGalaxify, GalaxyParam, GalaxyConfig, GalaxyOutput)
 exportClass(GalaxyParam, GalaxyConfig, GalaxyOutput)
 import(BiocGenerics)
+importFrom(Biobase, copySubstitute)
+importFrom(roxygen2, roxygenize, collate_roclet, namespace_roclet, rd_roclet)

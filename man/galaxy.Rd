@@ -11,7 +11,7 @@
 
 \usage{
 galaxy(func, manpage, ..., name, package=NULL, is.exported=NULL,
-    version, galaxyConfig)
+    version, galaxyConfig, packageSourceDir)
 }
 
 \arguments{
@@ -52,6 +52,11 @@ galaxy(func, manpage, ..., name, package=NULL, is.exported=NULL,
     \bold{Required.}
     A \code{link{GalaxyConfig}} object describing your
     Galaxy configuration.
+  }
+  \item{packageSourceDir}{
+    If present, points to the directory of a source package upon which to run
+    \code{roxygenize()} from the \code{roxygen2} package, creating manual
+    pages from source code comments.
   }
 }
 

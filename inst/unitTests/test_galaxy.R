@@ -97,7 +97,7 @@ test_galaxy <- function()
 test_galaxy_on_function_not_in_package <- function() 
 {
 
-    source(system.file("extdata", "functionToGalaxify2.R", package="RGalaxy"))
+    base::source(system.file("extdata", "functionToGalaxify2.R", package="RGalaxy"))
     manpage <- system.file("extdata", "functionToGalaxify2.Rd", package="RGalaxy")
     galaxy(functionToGalaxify,
         manpage=manpage,
@@ -247,19 +247,13 @@ test_galaxy_with_select <- function()
     
     outputMatrix <- file.path(d, "output.csv")
     outputPdf <- file.path(d, "output.pdf")
-    args <- sprintf('-f %s "%s" "%s" "%s" "%s" "%s" "%s"',
-        R_file, tsv1,
-        tsv2, "My Plot Title",
-        "My Plot Subtitle", outputMatrix,
-        outputPdf)
-    args <- sprintf('%s "%s" "%s" "%s" "%s" "%s" "%s"',
-        R_file, tsv1,
-        tsv2, "My Plot Title",
-        "My Plot Subtitle", outputMatrix,
-        outputPdf)
+    ## todo will this quoting work on windows?
+    tmpl <- paste("%s --inputfile1=%s --inputfile2=%s --plotTitle='%s'",
+        "--plotSubTitle='%s' --outputfile1=%s --outputfile2=%s")
+    args <- sprintf(tmpl, R_file, tsv1, tsv2, "My Plot Title",
+        "My Plot Subtitle", outputMatrix, outputPdf)
     
     res <- system2(R_exe, args, stdout="", stderr="")
-    sprintf("res = %d", res)
     checkTrue(res == 0, "R script returned nonzero code")
     checkTrue(file.exists(outputMatrix), "output matrix was not generated")
     checkTrue(file.exists(outputPdf), "output plot was not generated")
@@ -268,4 +262,100 @@ test_galaxy_with_select <- function()
     m3 <- as.matrix(read.csv(outputMatrix, row.names=1))
     checkEquals(m3, m1 + m2, "output matrix has incorrect values")
     
+}
+
+test_required_option <- function()
+{
+    base::source(system.file("samplePkg", "R", "functions.R", package="RGalaxy"))
+    galaxy(testRequiredOption,
+        manpage=system.file("samplePkg", "man",
+        "testRequiredOption.Rd", package="RGalaxy"),
+        requiredOption=GalaxyParam(type="text", label="a required option",
+        required=TRUE, requiredMsg="THIS FIELD IS MANDATORY"),
+        outputfile=GalaxyOutput("csv"),
+        name="Try",
+        version="0.99.0",
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir,
+            "Test Section", "testSectionId"),
+        packageSourceDir=system.file("samplePkg", package="RGalaxy"))
+    checkTrue(file.exists(system.file("samplePkg", "man",
+        "testRequiredOption.Rd", package="RGalaxy")))
+    destDir <- file.path(galaxyHome, "tools", toolDir)
+    R_file <- file.path(destDir,
+        paste("testRequiredOption", "R", sep="."))
+    XML_file <- file.path(destDir, 
+        paste("testRequiredOption", "xml", sep="."))
+    checkTrue(file.exists(R_file),
+        paste("R script", R_file, "does not exist!"))
+    checkTrue(file.exists(XML_file),
+        paste("XML file", XML_file, "does not exist!"))
+        
+    doc <- xmlInternalTreeParse(XML_file)
+    checkTrue(any(class(doc)=="XMLInternalDocument"), "invalid XML file!")
+    validatorNode <-
+        xpathApply(doc, "/tool/inputs/param[@name='requiredOption']/validator")
+    checkEquals("THIS FIELD IS MANDATORY",
+        xmlAttrs(validatorNode[[1]])['message'], checkNames=FALSE)
+    paramNode <- xpathApply(doc, "/tool/inputs/param[@name='requiredOption']")
+    checkEquals("[required] a required option",
+        xmlAttrs(paramNode[[1]])['label'], checkNames=FALSE)    
+}
+
+test_missing_param <- function()
+{
+    base::source(system.file("samplePkg", "R", "functions.R", package="RGalaxy"))
+    galaxy(testMissingParams,
+        manpage=system.file("samplePkg", "man",
+        "testMissingParams.Rd", package="RGalaxy"),
+        requiredParam=GalaxyParam(type="text", label="a required option",
+        required=TRUE, requiredMsg="THIS FIELD IS MANDATORY"),
+        paramWithDefault=GalaxyParam(type="integer", label="has default"),
+        ## not supplying optionalParam
+        outfile=GalaxyOutput("csv"),
+        name="TestMissingParam",
+        version="0.99.0",
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir,
+            "Test Section", "testSectionId"),
+        packageSourceDir=system.file("samplePkg", package="RGalaxy"))
+    checkTrue(file.exists(system.file("samplePkg", "man",
+        "testMissingParams.Rd", package="RGalaxy")))
+    destDir <- file.path(galaxyHome, "tools", toolDir)
+    R_file <- file.path(destDir,
+        paste("testMissingParams", "R", sep="."))
+    R_exe <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript")
+    d <- tempfile()
+    args <- sprintf("%s --requiredParam required --outfile=%s", R_file, d)
+    res <- system2(R_exe, args, stdout="", stderr="")
+    checkEquals(0, res)
+    output <- paste(readLines(d), collapse="")
+    expected <- paste("requiredParam==required",
+        "paramWithDefault==1optionalParam==missingoutfile==", d, sep="")
+    checkEquals(expected, output)
+}
+
+test_checkboxes <- function()
+{
+    base::source(system.file("samplePkg", "R", "functions.R", package="RGalaxy"))
+    galaxy(testCheckboxes,
+        manpage=system.file("samplePkg", "man",
+        "testCheckboxes.Rd", package="RGalaxy"),
+        checkbox1=GalaxyParam(type="boolean", label="checkbox1"),
+        checkbox2=GalaxyParam(type="boolean", label="checkbox2"),
+        outfile=GalaxyOutput("csv"),
+        name="TestCheckboxes",
+        version="0.99.0",
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir,
+            "Test Section", "testSectionId"),
+        packageSourceDir=system.file("samplePkg", package="RGalaxy"))
+    checkTrue(file.exists(system.file("samplePkg", "man",
+        "testCheckboxes.Rd", package="RGalaxy")))
+    destDir <- file.path(galaxyHome, "tools", toolDir)
+    R_file <- file.path(destDir,
+        paste("testCheckboxes", "R", sep="."))
+    R_exe <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript")
+    d <- tempfile()
+    args <- sprintf("%s --checkbox1 TRUE --checkbox2 FALSE --outfile=%s",
+        R_file, d)
+    res <- system2(R_exe, args, stdout="", stderr="")
+    checkEquals(0, res)
 }

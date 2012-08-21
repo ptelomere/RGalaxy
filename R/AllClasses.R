@@ -60,7 +60,9 @@ setClass("GalaxyParam",
         ## truevalue: not supported
         ## falsevalue: not supported
         size="numeric",
-        selectoptions="list"
+        selectoptions="list",
+        required="logical",
+        requiredMsg="character"
         
     ), contains="Galaxy", validity=function(object){
         
@@ -152,12 +154,15 @@ GalaxyParam <- function(
         display=character(0),
         checked=logical(0),
         size=numeric(0),
-        selectoptions=list())
+        selectoptions=list(),
+        required=FALSE,
+        requiredMsg="This field is required.")
 {
     new("GalaxyParam", type=type, label=label,
         value=value, min=min, max=max, format=format,
         force_select=force_select, display=display, checked=checked,
-        size=size, selectoptions=selectoptions)
+        size=size, selectoptions=selectoptions,
+        required=required, requiredMsg=requiredMsg)
 }
 
 setClass("GalaxyOutput", representation(format="character"),

@@ -12,7 +12,8 @@
 }
 \usage{
 GalaxyParam(type, label, value, min, max, format, force_select, display,
-    checked, size, selectoptions)
+    checked, size, selectoptions, required=FALSE,
+    requiredMsg="This field is required.")
 }
 
 \arguments{
@@ -68,6 +69,15 @@ GalaxyParam(type, label, value, min, max, format, force_select, display,
         The names are the friendly names as displayed in 
         the dropdown list; the values are what get passed
         to the R function.
+    }
+    \item{required}{
+        Logical. Whether the item is required. If \code{TRUE}, the
+        user will be forced by Galaxy to enter a value for this item.
+    }
+    \item{requiredMsg}{
+        If \code{required} is \code{TRUE} and the user tries to 
+        run the Galaxy tool without specifying a value for this 
+        parameter, this message will be displayed.
     }
 }
 \section{Methods}{

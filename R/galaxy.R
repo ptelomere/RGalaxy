@@ -25,12 +25,15 @@ editToolConfXML <-
 
 galaxy <- 
     function(func, manpage, ..., name, package=NULL, is.exported=NULL,
-        version, galaxyConfig)
+        version, galaxyConfig, packageSourceDir)
 {
     
     requiredFields <- c("func", "manpage", "name",
         "galaxyConfig")
     missingFields <- character(0)
+    
+    if (!missing(packageSourceDir)) roxygenize(packageSourceDir)
+    
     for (requiredField in requiredFields)
     {
         is.missing <- do.call(missing, list(requiredField))
@@ -100,16 +103,20 @@ galaxy <-
     descNode <- newXMLNode("description", newXMLTextNode(title),
         parent=xml)
     
-    commandText <- paste(funcName, ".R ", sep="")
+    commandText <- paste(funcName, ".R\n", sep="")
     for (name in names(paramList))
     {
-        commandText <- paste(commandText, '"$', name, '" ', sep="")
+        commandText <- paste(commandText, "       ",
+            sprintf("#if str($%s).strip() != \"\":\n", name),
+            "          ", sprintf("--%s=\"$%s\"", name, name),
+            "\n       #end if\n",
+            sep="")
     }
     commandText <- paste(commandText, "2>&1", sep="")
     
     commandNode <- newXMLNode("command", newXMLTextNode(commandText),
         parent=xml)
-    xmlAttrs(commandNode)["interpreter"] <- "Rscript"
+    xmlAttrs(commandNode)["interpreter"] <- "Rscript --vanilla"
     inputsNode <- newXMLNode("inputs", parent=xml)
     outputsNode <- newXMLNode("outputs", parent=xml)
     
@@ -120,6 +127,12 @@ galaxy <-
         if (class(item) %in% "GalaxyParam")
         {
             paramNode <- newXMLNode("param", parent=inputsNode)
+            if (item@required)
+            {
+                validatorNode <- newXMLNode("validator", parent=paramNode)
+                xmlAttrs(validatorNode)["type"] <- "empty_field"
+                xmlAttrs(validatorNode)["message"] <- item@requiredMsg
+            }
             xmlAttrs(paramNode)["name"] <- name
             xmlAttrs(paramNode)["type"] <- item@type
 
@@ -131,6 +144,8 @@ galaxy <-
             attributeFields <- c("label", "value", "min", "max",
                 "force_select", "display", "checked", "size")
 
+
+            if (item@required) item@label <- paste("[required]", item@label)
             for (field in attributeFields)
             {
                 value <- as.character(slot(item, field))
@@ -195,75 +210,59 @@ createScriptFile <- function(scriptFileName, func, funcName, paramList, package,
 {
     unlink(scriptFileName)
 
-    scat <- function(msg) {
-        if (missing(msg))
-        msg <- ""
-        write(msg, file=scriptFileName, append=TRUE)
+    existingFuncParams <- sort(names(formals(funcName)))
+    proposedFuncParams <- sort(names(paramList))
+    if(!all(proposedFuncParams %in% existingFuncParams)) {
+        stop(paste("The named arguments you passed do not match",
+        "the arguments accepted by your function."))
     }
-    scat("#!/usr/bin/env Rscript")
-    scat()
-    scat("options('useFancyQuotes' = FALSE)")
+
+
+    repList <- list()
     
     funcCode <- displayFunction(func, funcName)
 
-    scat("args <- commandArgs(TRUE)")
-    scat(paste("if (!length(args)==", length(paramList), ")",
-      "stop('Wrong number of command-line arguments provided.')"))
-
+    repList$FUNCTION <- funcCode
+    repList$FUNCNAME <- funcName
     
-    itemNum = 1
+    galaxyToRtypeMap <- list("text"="character", "integer"="integer",
+        "float"="numeric", "data"="character", "boolean"="logical",
+        "select"="character", "file"="character")
+    
+    repVal <- ""
     for(name in names(paramList))
     {
         item <- paramList[name][[1]]
-        ##sprintf("class of item is %s", class(item))
-        scat(sprintf("%s <- args[%d]", name, itemNum))
-        if (class(item) %in% "GalaxyParam")
-        {
-            if (item@type == "integer")
-            {
-                scat(sprintf("%s <- as.integer(%s)", name, name))
-            } else if (item@type == "float") {
-                scat(sprintf("%s <- as.numeric(%s)", name, name))
-            }
-        }
-        itemNum <- itemNum + 1 
+        if ("GalaxyParam" %in% class(item)) type = galaxyToRtypeMap[item@type]
+        else type="character"
+        
+        repVal <- paste(repVal, "option_list$",
+            sprintf("%s <- make_option('--%s', type='%s')\n",
+            name, name, type),
+            sep="")
     }
     
+    repList$POPULATE_OPTION_LIST <- repVal
     
     if (!is.null(package)) {
-        scat(paste("library(", package, ")"))
+        repList$FUNCTION <- "## function body not needed here, it is in package"
+        repList$LIBRARY <- paste("library(", package, ")", sep="")
         do.call(library, list(package))
         if ((!is.null(is.exported)) && length(is.exported)>0 && 
             is.exported==FALSE)
         {
-            funcName <- sprintf("%s:::%s", package, funcName)
+            repList$FULLFUNCNAME <- sprintf("%s:::%s", package, funcName)
+        } else {
+            repList$FULLFUNCNAME <- funcName
         }
+        
+    } else {
+        repList$LIBRARY <- ""
+        repList$FULLFUNCNAME <- funcName
     }
     
-    
-    existingFuncParams <- sort(names(formals(funcName)))
-    proposedFuncParams <- sort(names(paramList))
-    if (!all.equal(existingFuncParams, proposedFuncParams)) {
-        stop(paste("The named arguments you passed do not match",
-        "the arguments accepted by your function."))
-    }
-    
-    scat()
-    
-
-    scat(funcCode)
-
-    scat()
-
-    fCall <- paste(funcName, "(", sep="")
-    arglist <- lapply(names(paramList), function(x)
-    {
-        paste(x, "=", x, sep="")
-    })
-    sArgslist <- paste(arglist, collapse=", ")
-    fCall <- paste(fCall, sArgslist, ")", sep="")
-    scat(fCall)
-
+    copySubstitute(system.file("template", "template.R", package="RGalaxy"),
+        scriptFileName, repList)
 }
 
 getSupportedExtensions <- function(galaxyHome=".")
@@ -279,3 +278,16 @@ getSupportedExtensions <- function(galaxyHome=".")
     tmp <- lapply(extNodes, xmlAttrs)
     unlist(lapply(tmp, "[[", "extension"))
 }
+
+checkInputs <- function(a, b=1, c)
+{
+    m <- match.call()
+    args <- sapply(names(m)[-1], function(nm) m[[nm]])
+
+    f <- formals()
+    isSymbol <- sapply(f, is.symbol)
+    f[isSymbol] <- "missing"
+    f[names(args)] <- args
+    f
+}
+
