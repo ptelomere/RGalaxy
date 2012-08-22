@@ -247,11 +247,10 @@ test_galaxy_with_select <- function()
     
     outputMatrix <- file.path(d, "output.csv")
     outputPdf <- file.path(d, "output.pdf")
-    ## todo will this quoting work on windows?
-    tmpl <- paste("%s --inputfile1=%s --inputfile2=%s --plotTitle='%s'",
-        "--plotSubTitle='%s' --outputfile1=%s --outputfile2=%s")
-    args <- sprintf(tmpl, R_file, tsv1, tsv2, "My Plot Title",
-        "My Plot Subtitle", outputMatrix, outputPdf)
+    tmpl <- paste("%s --inputfile1=%s --inputfile2=%s --plotTitle=%s",
+        "--plotSubTitle=%s --outputfile1=%s --outputfile2=%s")
+    args <- sprintf(tmpl, R_file, tsv1, tsv2, "My_Plot_Title",
+        "My_Plot_Subtitle", outputMatrix, outputPdf)
     
     res <- system2(R_exe, args, stdout="", stderr="")
     checkTrue(res == 0, "R script returned nonzero code")
