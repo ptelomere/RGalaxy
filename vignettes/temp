@@ -233,7 +233,7 @@ To share your Galaxy tool with a wider audience, you need to move
 it to a production instance of Galaxy. The files you'll need to move are 
 GALAXY\_HOME/tool\_conf.xml (or maybe just the section that was 
 created by \galaxy{}), and the directory with your tool files
-(in our example, that was GALAXY\_HOME/mytool). 
+(in our example, that was GALAXY\_HOME/tools/mytool). 
 
 \section{A More Useful Example}
 
