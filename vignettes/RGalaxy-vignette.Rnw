@@ -175,8 +175,8 @@ specifies the types you can use.
 Galaxy functions create one or more output files, which are represented
 in the call to \Rcode{galaxy} by one or more named instances of the
 \Rcode{GalaxyOutput} class. This class constructor takes a single
-argument which is the file type of the output file. The list of supported
-types can be found in your Galaxy distribution, in the file
+argument which is the file type of the output file. A partial list
+of supported types can be found in your Galaxy distribution, in the file
 datatypes\_conf.xml.sample. 
 
 The third and final class passed to the \Rcode{galaxy} function is

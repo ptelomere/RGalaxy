@@ -16,8 +16,8 @@ GalaxyOutput(format)
 \arguments{
     \item{format}{
         \bold{Required.}
-        The file type of the output file. This must be a file extension
-        listed in GALAXY_HOME/datatypes_conf.xml.
+        The file type of the output file. For suggested extensions, see
+        GALAXY_HOME/datatypes_conf.xml.
     }
 }
 \section{Methods}{

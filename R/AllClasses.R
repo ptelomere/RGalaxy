@@ -180,10 +180,10 @@ setClass("GalaxyOutput", representation(format="character"),
         }
 
 
-        if (!object@format %in% getSupportedExtensions())
-        {
-            e(paste("The format", object@format, "is not supported"))
-        }
+        #if (!object@format %in% getSupportedExtensions())
+        #{
+        #    e(paste("The format", object@format, "is not supported"))
+        #}
 
         msg <- rc$name
         if (length(msg) == 0) TRUE else msg

@@ -12,10 +12,28 @@ editToolConfXML <-
     toolboxNode <- xpathSApply(doc, "/toolbox")
     section <- xpathSApply(doc, 
         sprintf("/toolbox/section[@name='%s']", sectionName))
-    if (length(section)>0)
-        removeNodes(section)
+    if (length(section) == 0)
+    {
+        sectionNode <- newXMLNode("section", parent=toolboxNode)
+    } else {
+        sectionNode <- section[[1]]
+        toolNodes <- xmlChildren(sectionNode)
+        expectedName = sprintf("%s/%s.xml", toolDir, funcName)
+        nodeToRemove <- NULL
+        if (length(toolNodes) > 0)
+        {
+            for (i in 1:length(toolNodes))
+            {
+                node = toolNodes[[i]]
+                if (xmlAttrs(node)['file'] == expectedName) {
+                    nodeToRemove <- node
+                    break
+                }
+            }
+            if (!is.null(nodeToRemove)) removeNodes(nodeToRemove)
+        }
+    }
     
-    sectionNode <- newXMLNode("section", parent=toolboxNode)
     xmlAttrs(sectionNode)["name"] <- sectionName
     xmlAttrs(sectionNode)["id"] <- sectionId
     toolNode <- newXMLNode("tool", parent=sectionNode)

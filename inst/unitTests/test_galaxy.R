@@ -4,7 +4,14 @@ funcName <- "functionToGalaxify"
 
 dir.create(galaxyHome, recursive=TRUE, showWarnings=FALSE)
 file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
-    file.path(galaxyHome, "tool_conf.xml"), overwrite=FALSE)
+    file.path(galaxyHome, "tool_conf.xml"), overwrite=TRUE)
+
+.setUp <- function()
+{
+    file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
+        file.path(galaxyHome, "tool_conf.xml"), overwrite=TRUE)
+    
+}
 
 
 test_validity_method <- function()
@@ -357,4 +364,46 @@ test_checkboxes <- function()
         R_file, d)
     res <- system2(R_exe, args, stdout="", stderr="")
     checkEquals(0, res)
+}
+
+test_multiple_galaxifications_do_not_overwrite_each_other <- function()
+{
+    file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
+        file.path(galaxyHome, "tool_conf.xml"), overwrite=TRUE)
+    
+    galaxy(functionToGalaxify,
+        manpage="functionToGalaxify",
+        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+        plotTitle=GalaxyParam(type="text", label="Plot Title"),
+        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+        outputfile1=GalaxyOutput("csv"),
+        outputfile2=GalaxyOutput("pdf"),
+        name="verb1", 
+        package="RGalaxy",
+        version=packageDescription("RGalaxy")$Version,
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+            "testSectionId"))
+    
+    galaxy(anotherTestFunction,
+        manpage="anotherTestFunction",
+        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+        plotTitle=GalaxyParam(type="text", label="Plot Title"),
+        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+        outputfile1=GalaxyOutput("csv"),
+        outputfile2=GalaxyOutput("pdf"),
+        name="verb2", 
+        package="RGalaxy",
+        version=packageDescription("RGalaxy")$Version,
+        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+            "testSectionId"))
+    toolfile <- file.path(galaxyHome, "tool_conf.xml")
+    doc <- xmlInternalTreeParse(toolfile)
+    checkTrue(any(class(doc)=="XMLInternalDocument"), "invalid XML file!")
+    xpath <- "/toolbox/section[@name='Test Section']"
+    toolNodes <- xpathSApply(doc, xpath)
+    tools <- xmlChildren(toolNodes[[1]])
+    
+    checkEquals(2, length(xmlChildren(toolNodes[[1]])))
 }

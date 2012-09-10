@@ -1,4 +1,5 @@
-export(galaxy, functionToGalaxify, GalaxyParam, GalaxyConfig, GalaxyOutput)
+export(galaxy, functionToGalaxify, anotherTestFunction, GalaxyParam,
+    GalaxyConfig, GalaxyOutput)
 exportClass(GalaxyParam, GalaxyConfig, GalaxyOutput)
 import(BiocGenerics)
 importFrom(Biobase, copySubstitute)
