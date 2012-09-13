@@ -50,7 +50,8 @@ galaxy <-
         "galaxyConfig")
     missingFields <- character(0)
     
-    if (!missing(packageSourceDir)) roxygenize(packageSourceDir)
+    if (!missing(packageSourceDir)) 
+        roxygenize(packageSourceDir, roclets=("rd"))
     
     for (requiredField in requiredFields)
     {
