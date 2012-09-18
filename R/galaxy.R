@@ -131,7 +131,6 @@ galaxy <-
             "\n       #end if\n",
             sep="")
     }
-    commandText <- paste(commandText, "2>&1", sep="")
     
     commandNode <- newXMLNode("command", newXMLTextNode(commandText),
         parent=xml)
@@ -265,7 +264,7 @@ createScriptFile <- function(scriptFileName, func, funcName, paramList, package,
     
     if (!is.null(package)) {
         repList$FUNCTION <- "## function body not needed here, it is in package"
-        repList$LIBRARY <- paste("library(", package, ")", sep="")
+        repList$LIBRARY <- paste("suppressPackageStartupMessages(library(", package, "))", sep="")
         do.call(library, list(package))
         if ((!is.null(is.exported)) && length(is.exported)>0 && 
             is.exported==FALSE)

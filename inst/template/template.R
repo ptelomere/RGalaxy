@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+## begin warning handler
+withCallingHandlers({
+
 options('useFancyQuotes' = FALSE)
 
 suppressPackageStartupMessages(library("optparse"))
@@ -22,3 +25,9 @@ for(param in names(opt))
 }
 
 do.call(@FULLFUNCNAME@, params)
+
+## end warning handler
+}, warning = function(w) {
+    cat(paste("Warning:", conditionMessage(w), "\n"))
+    invokeRestart("muffleWarning")
+})
