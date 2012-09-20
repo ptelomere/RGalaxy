@@ -1,6 +1,8 @@
 export(galaxy, functionToGalaxify, anotherTestFunction, GalaxyParam,
-    GalaxyConfig, GalaxyOutput)
-exportClass(GalaxyParam, GalaxyConfig, GalaxyOutput)
+    GalaxyConfig, GalaxyOutput, getFriendlyName, GalaxyInputFile,
+    testFunctionWithSelect)
+exportClass(GalaxyParam, GalaxyConfig, GalaxyOutput, GalaxyInputFile)
 import(BiocGenerics)
 importFrom(Biobase, copySubstitute)
-importFrom(roxygen2, roxygenize, collate_roclet, namespace_roclet, rd_roclet)
+importFrom(roxygen2, roxygenize, rd_roclet)
+##exportMethods(format)

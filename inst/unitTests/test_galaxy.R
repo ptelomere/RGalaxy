@@ -13,8 +13,8 @@ file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
     
 }
 
-
-test_validity_method <- function()
+## These checks no longer happen in the GalaxyParam validity method.
+old_test_validity_method <- function()
 {
     ## test the GalaxyParam validity method
     checkException(GalaxyParam(), "GalaxyParam with no parameters created!")
@@ -61,7 +61,8 @@ test_validity_method <- function()
     
 }
 
-test_galaxy_param <- function()
+## This test no longer applies.
+old_test_galaxy_param <- function()
 {
     gp <- GalaxyParam(type="select", label="label",
         selectoptions=list(a="one"))
@@ -74,13 +75,6 @@ test_galaxy <- function()
 
     galaxy(functionToGalaxify,
         manpage="functionToGalaxify",
-        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
-        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
-        plotTitle=GalaxyParam(type="text", label="Plot Title"),
-        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
-        outputfile1=GalaxyOutput("csv"),
-        outputfile2=GalaxyOutput("pdf"),
-        name="Add",
         package="RGalaxy",
         version=packageDescription("RGalaxy")$Version,
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section", 
@@ -108,13 +102,6 @@ test_galaxy_on_function_not_in_package <- function()
     manpage <- system.file("extdata", "functionToGalaxify2.Rd", package="RGalaxy")
     galaxy(functionToGalaxify,
         manpage=manpage,
-        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
-        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
-        plotTitle=GalaxyParam(type="text", label="Plot Title"),
-        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
-        outputfile1=GalaxyOutput("csv"),
-        outputfile2=GalaxyOutput("pdf"),
-        name="Add", 
         version=packageDescription("RGalaxy")$Version,
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
             "testSectionId"))
@@ -146,71 +133,70 @@ test_galaxy_sanity_checks <- function()
 {
     selectoptions <- list("TitleA"="A", "TitleB"="B")
     
-    checkException(galaxy(functionToGalaxify,
-        manpage="functionToGalaxify",
-        outputfile1=GalaxyOutput("csv"),
-        outputfile2=GalaxyOutput("pdf"),
-        name="Add", 
-        package="RGalaxy",
-        version=packageDescription("RGalaxy")$Version,
-        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
-            "testSectionId"),
-            "galaxy() got no GalaxyParam objects but did not throw an exception")
-    )
+    ## todo add new check for this:
     
-    checkException(galaxy(functionToGalaxify,
-        manpage="functionToGalaxify",
-        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
-        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
-        plotTitle=GalaxyParam(type="select", label="Plot Title",
-            selectoptions=selectoptions, force_select=TRUE),
-        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
-        name="Add", 
-        package="RGalaxy",
-        version=packageDescription("RGalaxy")$Version,
-        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
-            "testSectionId")),
-            "galaxy() got no GalaxyOutput objects but did not throw an exception")
+#    checkException(galaxy(functionToGalaxify,
+#        manpage="functionToGalaxify",
+#        package="RGalaxy",
+#        version=packageDescription("RGalaxy")$Version,
+#        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+#            "testSectionId"),
+#            "galaxy() got no GalaxyParam objects but did not throw an exception")
+#    )
+    
+# todo and this:
+#    checkException(galaxy(functionToGalaxify,
+#        manpage="functionToGalaxify",
+#        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
+#        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+#        plotTitle=GalaxyParam(type="select", label="Plot Title",
+#            selectoptions=selectoptions, force_select=TRUE),
+#        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+#        name="Add", 
+#        package="RGalaxy",
+#        version=packageDescription("RGalaxy")$Version,
+#        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+#            "testSectionId")),
+#            "galaxy() got no GalaxyOutput objects but did not throw an exception")
 
 
-    checkException(galaxy(galaxy(functionToGalaxify,
-        manpage="functionToGalaxify",
-        blablabla=GalaxyParam(type="data", label="Matrix 1"),
-        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
-        plotTitle=GalaxyParam(type="select", label="Plot Title",
-            selectoptions=selectoptions, force_select=TRUE),
-        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
-        outputfile1=GalaxyOutput("csv"),
-        outputfile2=GalaxyOutput("pdf"),
-        name="Add", 
-        package="RGalaxy",
-        version=packageDescription("RGalaxy")$Version,
-        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
-            "testSectionId"))),
-            "function parameters and galaxy() named parameters do not match")
+
+# and this (applies only if user has supplied GalaxyParam objects...)
+
+#    checkException(galaxy(galaxy(functionToGalaxify,
+#        manpage="functionToGalaxify",
+#        blablabla=GalaxyParam(type="data", label="Matrix 1"),
+#        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
+#        plotTitle=GalaxyParam(type="select", label="Plot Title",
+#            selectoptions=selectoptions, force_select=TRUE),
+#        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
+#        outputfile1=GalaxyOutput("csv"),
+#        outputfile2=GalaxyOutput("pdf"),
+#        name="Add", 
+#        package="RGalaxy",
+#        version=packageDescription("RGalaxy")$Version,
+#        galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
+#            "testSectionId"))),
+#            "function parameters and galaxy() named parameters do not match")
     
 }
 
 test_galaxy_with_select <- function()
 {
     selectoptions <- list("TitleA"="A", "TitleB"="B")
-        
-    galaxy(functionToGalaxify,
-        manpage="functionToGalaxify",
-        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
-        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
-        plotTitle=GalaxyParam(type="select", label="Plot Title",
-            selectoptions=selectoptions, force_select=TRUE),
-        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
-        outputfile1=GalaxyOutput("csv"),
-        outputfile2=GalaxyOutput("pdf"),
-        name="Add", 
+    
+    funcName <- "testFunctionWithSelect"
+    galaxy(testFunctionWithSelect,
+        manpage=funcName,
         package="RGalaxy",
+        plotTitle=GalaxyParam(force_select=TRUE),
         version=packageDescription("RGalaxy")$Version,
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
             "testSectionId"))
     
     destDir <- file.path(galaxyHome, "tools", toolDir)
+    
+    
     
     R_file <- file.path(destDir,
         paste(funcName, "R", sep="."))
@@ -226,7 +212,7 @@ test_galaxy_with_select <- function()
     checkTrue(any(class(doc)=="XMLInternalDocument"), "invalid XML file!")
     optionNodes <-
         xpathApply(doc, "/tool/inputs/param[@name='plotTitle']/option")
-    checkTrue(length(optionNodes)==length(selectoptions),
+    checkEquals(length(selectoptions), length(optionNodes),
         "wrong number of option nodes!")
     optionAttrs <-
         xpathApply(doc, "/tool/inputs/param[@name='plotTitle']/option",
@@ -245,7 +231,7 @@ test_galaxy_with_select <- function()
     ## fixme, why is there a trailing space here?
     checkEquals(sub("\\s+$", "", capture.output(xpathApply(doc,
         "/tool/description/text()")[[1]])),
-        "Add two matrices",
+        "A variation on functionToGalaxify that takes a multiple-choice option.",
         "description (title in manpage) is wrong")
     R_exe <- file.path(Sys.getenv("R_HOME"), "bin", "Rscript")
     d <- tempdir()
@@ -276,10 +262,8 @@ test_required_option <- function()
     galaxy(testRequiredOption,
         manpage=system.file("samplePkg", "man",
         "testRequiredOption.Rd", package="RGalaxy"),
-        requiredOption=GalaxyParam(type="text", label="a required option",
-        required=TRUE, requiredMsg="THIS FIELD IS MANDATORY"),
-        outputfile=GalaxyOutput("csv"),
-        name="Try",
+        requiredOption=GalaxyParam(required=TRUE,
+            requiredMsg="THIS FIELD IS MANDATORY"),
         version="0.99.0",
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir,
             "Test Section", "testSectionId"),
@@ -303,7 +287,10 @@ test_required_option <- function()
     checkEquals("THIS FIELD IS MANDATORY",
         xmlAttrs(validatorNode[[1]])['message'], checkNames=FALSE)
     paramNode <- xpathApply(doc, "/tool/inputs/param[@name='requiredOption']")
-    checkEquals("[required] a required option",
+    print("------")
+    print(xmlAttrs(paramNode[[1]])['label'])
+    print("=====")
+    checkEquals("[required] Required Option",
         xmlAttrs(paramNode[[1]])['label'], checkNames=FALSE)    
 }
 
@@ -313,12 +300,8 @@ test_missing_param <- function()
     galaxy(testMissingParams,
         manpage=system.file("samplePkg", "man",
         "testMissingParams.Rd", package="RGalaxy"),
-        requiredParam=GalaxyParam(type="text", label="a required option",
-        required=TRUE, requiredMsg="THIS FIELD IS MANDATORY"),
-        paramWithDefault=GalaxyParam(type="integer", label="has default"),
-        ## not supplying optionalParam
-        outfile=GalaxyOutput("csv"),
-        name="TestMissingParam",
+        requiredParam=GalaxyParam(required=TRUE,
+            requiredMsg="THIS FIELD IS MANDATORY"),
         version="0.99.0",
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir,
             "Test Section", "testSectionId"),
@@ -335,7 +318,7 @@ test_missing_param <- function()
     checkEquals(0, res)
     output <- paste(readLines(d), collapse="")
     expected <- paste("requiredParam==required",
-        "paramWithDefault==1optionalParam==missingoutfile==", d, sep="")
+        "paramWithDefault==1optionalParam==character()outfile==", d, sep="")
     checkEquals(expected, output)
 }
 
@@ -345,10 +328,6 @@ test_checkboxes <- function()
     galaxy(testCheckboxes,
         manpage=system.file("samplePkg", "man",
         "testCheckboxes.Rd", package="RGalaxy"),
-        checkbox1=GalaxyParam(type="boolean", label="checkbox1"),
-        checkbox2=GalaxyParam(type="boolean", label="checkbox2"),
-        outfile=GalaxyOutput("csv"),
-        name="TestCheckboxes",
         version="0.99.0",
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir,
             "Test Section", "testSectionId"),
@@ -373,13 +352,6 @@ test_multiple_galaxifications_do_not_overwrite_each_other <- function()
     
     galaxy(functionToGalaxify,
         manpage="functionToGalaxify",
-        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
-        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
-        plotTitle=GalaxyParam(type="text", label="Plot Title"),
-        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
-        outputfile1=GalaxyOutput("csv"),
-        outputfile2=GalaxyOutput("pdf"),
-        name="verb1", 
         package="RGalaxy",
         version=packageDescription("RGalaxy")$Version,
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
@@ -387,13 +359,6 @@ test_multiple_galaxifications_do_not_overwrite_each_other <- function()
     
     galaxy(anotherTestFunction,
         manpage="anotherTestFunction",
-        inputfile1=GalaxyParam(type="data", label="Matrix 1"),
-        inputfile2=GalaxyParam(type="data", label="Matrix 2"),
-        plotTitle=GalaxyParam(type="text", label="Plot Title"),
-        plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
-        outputfile1=GalaxyOutput("csv"),
-        outputfile2=GalaxyOutput("pdf"),
-        name="verb2", 
         package="RGalaxy",
         version=packageDescription("RGalaxy")$Version,
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
@@ -407,3 +372,8 @@ test_multiple_galaxifications_do_not_overwrite_each_other <- function()
     
     checkEquals(2, length(xmlChildren(toolNodes[[1]])))
 }
+
+
+## more things to test:
+##GalaxyParam label overrides default
+## label gets set in the first place!

@@ -1,6 +1,6 @@
-\name{probe_lookup}
+\name{probeLookup}
 
-\alias{probe_lookup}
+\alias{probeLookup}
 \title{Get the PFAM and SYMBOL names for a set of Affymetrix probe IDs}
 
 \description{
@@ -10,7 +10,8 @@
 }
 
 \usage{
-probe_lookup(probe_ids, outputfile)
+probeLookup(probe_ids=character(),
+    outputfile=GalaxyOutput("probeLookup", "csv"))
 }
 
 \arguments{

@@ -8,67 +8,48 @@
 \description{
 %%  ~~ A concise (1-5 lines) description of what the class is. ~~
     Represents information about a parameter to a function
-    that is exposed in Galaxy.
+    that is exposed in Galaxy. Should only be used if the function
+    signature itself does not fully describe the way the parameter
+    should be exposed in Galaxy.
 }
 \usage{
-GalaxyParam(type, label, value, min, max, format, force_select, display,
-    checked, size, selectoptions, required=FALSE,
+GalaxyParam(label, min, max, force_select, display,
+    checked, size, required=FALSE,
     requiredMsg="This field is required.")
 }
 
 \arguments{
-    \item{type}{
-        \bold{Required.}
-        The type of the parameter. One of:
-        text, integer, float, boolean, select, file, data
-    }
     \item{label}{
         \bold{Required}
-        A friendly label for the parameter.
-    }
-    \item{value}{
-        The default value for the parameter. If the function
-        being added to Galaxy has a default value defined in its
-        signature, that wil be used automatically.
+        A friendly label for the parameter, if the name of the 
+        parameter is not sufficient.
     }
     \item{min}{
         The minimum allowed value for the parameter, if
-        \code{type} is integer or float.
+        the parameter type is numeric or integer.
     }
     \item{max}{
         The maximum allowed value for the parameter if 
-        \code{type} is integer or float.
-    }
-    \item{format}{
-        Only supplied if \code{type} is \code{data}. Must be one
-        of the supported data types listed in 
-        \code{GALAXY_HOME/datatypes_conf.xml} file.
+        the parameter type is numeric or integer.
     }
     \item{force_select}{
         Logical. Whether to force user to select an option in the list.
-        Only supplied if \code{type} is \code{select}.
+        Only supplied if the parameter is a select list, that is, a vector
+        of more than one element.
     }
     \item{display}{
-        If \code{type} is \code{select}, this can be either
+        If the parameter is a select list, this can be either
         \code{checkboxes} or \code{radio}, and determines how to
         render this parameter in HTML. Default is a drop-down
         select list.
     }
     \item{checked}{
-        Logical. If \code{type} is \code{boolean}, determines whether
+        Logical. If the parameter type is \code{logical}, determines whether
         check box should be checked.
     }
     \item{size}{
-        If \code{type} is \code{text}, this determines
+        If the parameter type is character, this determines
         the width (in characters) of the resulting text box.
-    }
-    \item{selectoptions}{
-        If \code{type} is \code{select}, this is a list of
-        names and values to populate a drop-down list or set
-        of checkboxes. All items in the list must be named.
-        The names are the friendly names as displayed in 
-        the dropdown list; the values are what get passed
-        to the R function.
     }
     \item{required}{
         Logical. Whether the item is required. If \code{TRUE}, the
@@ -84,20 +65,11 @@ GalaxyParam(type, label, value, min, max, format, force_select, display,
 No methods defined with class "GalaxyParam" in the signature.
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
 \code{link{galaxy}}, \code{\link{GalaxyConfig}}, \code{link{GalaxyOutput}}
-%%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
-%%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
 }
 \examples{
-params <- list(
-    inputfile1=GalaxyParam(type="data", label="Matrix 1"),
-    inputfile2=GalaxyParam(type="data", label="Matrix 2"),
-    plotTitle=GalaxyParam(type="text", label="Plot Title"),
-    plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"))
-
-
+    title <- GalaxyParam(required=TRUE, label="Override the default label")
 }
 \keyword{classes}

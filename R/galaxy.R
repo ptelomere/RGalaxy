@@ -1,3 +1,5 @@
+RtoGalaxyTypeMap <- list("character"="text", "integer"="integer",
+    "numeric"="float", "logical"="boolean")
 
 
 printf <- function(...) print(noquote(sprintf(...)))
@@ -41,13 +43,14 @@ editToolConfXML <-
     saveXML(doc, file=toolConfFile)
 }
 
+## todo break into smaller functions
 galaxy <- 
-    function(func, manpage, ..., name, package=NULL, is.exported=NULL,
+    function(func, manpage, ..., 
+        name=getFriendlyName(deparse(substitute(func))),
+        package=NULL, is.exported=NULL,
         version, galaxyConfig, packageSourceDir)
 {
-    
-    requiredFields <- c("func", "manpage", "name",
-        "galaxyConfig")
+    requiredFields <- c("func", "manpage", "galaxyConfig")
     missingFields <- character(0)
     
     if (!missing(packageSourceDir)) 
@@ -68,34 +71,11 @@ galaxy <-
         stop(msg)
     }
 
-    paramList <- list(...)
-    if (!length(paramList)) {
-        stop("You must pass parameters to galaxy().")
-    }
     
-    if (!suppressWarnings(any(lapply(paramList,
-        function(x)class(x)=="GalaxyParam"))))
-    {
-        stop(paste("You must pass one GalaxyParam object",
-            "for each parameter to your function."))
-    }
-    
-    if (!suppressWarnings(any(lapply(paramList,
-        function(x)class(x)=="GalaxyOutput"))))
-    {
-        stop(paste("You must supply at least one GalaxyOutput",
-            "object."))
-    }
 
-    
-    
-    if (any(which(nchar(names(paramList))==0)) || is.null(names(paramList)))
-    {
-        stop("All ... arguments to galaxy() must be named.")
-    }
+    paramList <- list(...)
 
     funcName <- deparse(substitute(func))
-
 
     rd <- getManPage(manpage, package)
     title <- getTitle(rd)
@@ -104,7 +84,19 @@ galaxy <-
         galaxyConfig@toolDir)
     dir.create(file.path(fullToolDir), recursive=TRUE, showWarnings=FALSE)
     scriptFileName <-  file.path(fullToolDir, paste(funcName, ".R", sep=""))
-    createScriptFile(scriptFileName, func, funcName, paramList,
+    funcInfo <- list()
+    for (param in names(formals(func)))
+        funcInfo[[param]] <- getFuncInfo(func, param)
+        
+        
+    if (!suppressWarnings(any(lapply(funcInfo,
+        function(x)x$type=="GalaxyOutput"))))
+    {
+        stop(paste("You must supply at least one GalaxyOutput",
+            "object."))
+    }
+    
+    createScriptFile(scriptFileName, func, funcName, funcInfo, paramList,
         package, is.exported)
     
     xmlFileName <- file.path(fullToolDir, paste(funcName, "xml", sep="."))
@@ -123,13 +115,15 @@ galaxy <-
         parent=xml)
     
     commandText <- paste(funcName, ".R\n", sep="")
-    for (name in names(paramList))
+    
+    for (name in names(funcInfo))
     {
         commandText <- paste(commandText, "       ",
             sprintf("#if str($%s).strip() != \"\":\n", name),
             "          ", sprintf("--%s=\"$%s\"", name, name),
             "\n       #end if\n",
             sep="")
+        
     }
     
     commandNode <- newXMLNode("command", newXMLTextNode(commandText),
@@ -139,65 +133,94 @@ galaxy <-
     outputsNode <- newXMLNode("outputs", parent=xml)
     
     
-    for (name in names(paramList))
+    for (name in names(funcInfo))
     {
-        item <- paramList[name][[1]]
-        if (class(item) %in% "GalaxyParam")
+        item <- funcInfo[name][[1]]
+        param <- paramList[name][[1]]
+        if (!item$type == "GalaxyOutput")
         {
             paramNode <- newXMLNode("param", parent=inputsNode)
-            if (item@required)
+            if ( (!is.null(param)) && param@required)
             {
                 validatorNode <- newXMLNode("validator", parent=paramNode)
                 xmlAttrs(validatorNode)["type"] <- "empty_field"
-                xmlAttrs(validatorNode)["message"] <- item@requiredMsg
+                xmlAttrs(validatorNode)["message"] <- param@requiredMsg
+                xmlAttrs(paramNode)['optional'] <- 'false'
+            } else {
+                xmlAttrs(paramNode)['optional'] <- "true"
             }
             xmlAttrs(paramNode)["name"] <- name
-            xmlAttrs(paramNode)["type"] <- item@type
+            type <- RtoGalaxyTypeMap[[item$type]]
+            if (item$type == "GalaxyInputFile") type <- "data"
+            if (item$length > 1) type <- "select"
+            xmlAttrs(paramNode)["type"] <- type
 
-            if(length(item@value)==0 && nchar(formals(func)[name])>0)
-                item@value <- as.character(unlist(formals(func)[name]))
-
+            if(!is.null(item$default))
+                xmlAttrs(paramNode)["value"] <- item$default
+            else
+                if (type %in% c("integer", "float"))
+                    xmlAttrs(paramNode)["value"] <- ""
 
             xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, name)
-            attributeFields <- c("label", "value", "min", "max",
+            
+            if ((!is.null(param)) && length(param@label))
+                item$label <- param@label
+            
+            attributeFields <- c("label",  "min", "max",
                 "force_select", "display", "checked", "size")
-
-
-            if (item@required) item@label <- paste("[required]", item@label)
+            if ( (!is.null(param)) && param@required){
+                item$label <- paste("[required]", item$label)
+                
+            }
             for (field in attributeFields)
             {
-                value <- as.character(slot(item, field))
-                if (length(value) > 0)
-                    xmlAttrs(paramNode)[field] <- value
-            }
-            if (item@type=="select")
-            {
-                for (option in names(item@selectoptions))
+                if (!is.null(param))
                 {
-                    value <- item@selectoptions[option]
-                    optionNode <- newXMLNode("option", option,
-                        parent=paramNode)
-                    xmlAttrs(optionNode)["value"] <- value
+                    value <- as.character(slot(param, field))
+                    if (length(value) > 0)
+                        xmlAttrs(paramNode)[field] <- value
+                }
+            }
+            
+            xmlAttrs(paramNode)['label'] <- item$label
+            
+            
+            if (type=="select")
+            {
+                if (!is.null(item$selectoptions))
+                {
+                    selectoptions <- eval(item$selectoptions)
+                    idx <- 1
+                    for (value in selectoptions)
+                    {
+                        option <- names(selectoptions)[[idx]]
+                        if (is.null(option)) option <- value
+                        optionNode <- newXMLNode("option", option,
+                            parent=paramNode)
+                        xmlAttrs(optionNode)['value'] <- value
+                        idx <- idx + 1
+                    }
+                    
                 }
 
             }
             invisible(NULL)
             
-        } else if (class(item) %in% "GalaxyOutput")
+        } else
         {
             dataNode <- newXMLNode("data", parent=outputsNode)
-            xmlAttrs(dataNode)["format"] <- item@format
+            if (is.null(item$default))
+                stop(sprintf("GalaxyOutput '%s' must have a parameter.", name))
+            galaxyOutput <- eval(item$default)
+            xmlAttrs(dataNode)["format"] <- galaxyOutput@format
             xmlAttrs(dataNode)["name"] <- name
+            xmlAttrs(dataNode)["label"] <- as.character(galaxyOutput)
             
         }
     }
     
     
-    
-    ##testsNode <- newXMLNode("tests", parent=xml) ## TODO - enable these?
-    ## todo, fill in test section
-    
-    helpText <- "" ## TODO, generate help text
+    helpText <- ""
     helpText <- generateHelpText(rd)
     
     helpNode <- newXMLNode("help", newXMLTextNode(helpText), parent=xml)
@@ -224,17 +247,10 @@ displayFunction <- function(func, funcName)
     s
 }
 
-createScriptFile <- function(scriptFileName, func, funcName, paramList, package, is.exported)
+createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
+    paramList, package, is.exported)
 {
     unlink(scriptFileName)
-
-    existingFuncParams <- sort(names(formals(funcName)))
-    proposedFuncParams <- sort(names(paramList))
-    if(!all(proposedFuncParams %in% existingFuncParams)) {
-        stop(paste("The named arguments you passed do not match",
-        "the arguments accepted by your function."))
-    }
-
 
     repList <- list()
     
@@ -243,17 +259,17 @@ createScriptFile <- function(scriptFileName, func, funcName, paramList, package,
     repList$FUNCTION <- funcCode
     repList$FUNCNAME <- funcName
     
-    galaxyToRtypeMap <- list("text"="character", "integer"="integer",
-        "float"="numeric", "data"="character", "boolean"="logical",
-        "select"="character", "file"="character")
-    
     repVal <- ""
-    for(name in names(paramList))
+    
+    
+    for (name in names(funcInfo))
     {
-        item <- paramList[name][[1]]
-        if ("GalaxyParam" %in% class(item)) type = galaxyToRtypeMap[item@type]
-        else type="character"
-        
+        item <- funcInfo[name][[1]]
+        if (item$length > 1)
+            type <- "character"
+        else
+            type <- item$type
+        if (type %in% c("GalaxyOutput", "GalaxyInputFile")) type <- "character"
         repVal <- paste(repVal, "option_list$",
             sprintf("%s <- make_option('--%s', type='%s')\n",
             name, name, type),
@@ -309,3 +325,46 @@ checkInputs <- function(a, b=1, c)
     f
 }
 
+getFriendlyName <- function(camelName)
+{
+    chars <- strsplit(camelName, split="")
+    ret <- ""
+    i <- 1
+    for (char in chars[[1]])
+    {
+        if(char %in% LETTERS && i > 1) ret <- c(ret, " ")
+        if(i == 1) char <- toupper(char)
+        ret <- c(ret, char)
+        i <- i + 1
+    }
+    paste(ret, collapse="", sep="")
+}
+
+getFuncInfo <- function(func, param)
+{
+    ret <- list()
+    ret$selectoptions <- NULL
+    f <- formals(func)[[param]]
+    cl <- NULL
+    tryCatch(cl <- class(eval(f)), error=function(x){})
+    if (is.null(cl))
+        stop(sprintf("No type specified for parameter '%s'.", param))
+    ret$type <- class(eval(f))
+    if (ret$type == "list") 
+    {
+        msg <- sprintf("'list' is an invalid type for parameter '%s'.\n",
+            param)
+        msg <- c(msg,
+            "Use a homogeneous type like 'integer', 'character', etc.")
+        stop(msg)
+    }
+    ret$length <- length(eval(f))
+    if (ret$length == 1)
+        ret$default <- f
+    else if (ret$length == 0)
+        ret$default <- NULL ## ??
+    else
+        ret$selectoptions <- f
+    ret$label <- getFriendlyName(param)
+    return(ret)
+}

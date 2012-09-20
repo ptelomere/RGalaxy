@@ -4,7 +4,8 @@
 #' @param requiredOption An option that is required.
 #' @param outputfile The name of a file where diagnostic output is written.
 #' @details These are the details.
-testRequiredOption <- function(requiredOption, outputfile)
+testRequiredOption <- function(requiredOption=character(),
+    outputfile=GalaxyOutput("mytext", "txt"))
 {
     write(sprintf("requiredOption==%s", requiredOption), file=outputfile)
 }
@@ -20,8 +21,8 @@ testRequiredOption <- function(requiredOption, outputfile)
 #' @param optionalParam An optional parameter
 #' @param outfile where to write diagnostic output
 #' @details These are the details.
-testMissingParams <- function(requiredParam, paramWithDefault=1,
-     optionalParam, outfile)
+testMissingParams <- function(requiredParam=character(), paramWithDefault=1,
+     optionalParam=character(), outfile=GalaxyOutput("myoutput", "txt"))
 {
     m <- match.call()
     args <- sapply(names(m)[-1], function(nm) m[[nm]])
@@ -45,7 +46,8 @@ testMissingParams <- function(requiredParam, paramWithDefault=1,
 #' @param optionalParam An optional parameter
 #' @param outfile where to write diagnostic output
 #' @details These are the details.
-testCheckboxes <- function(checkbox1, checkbox2, outfile)
+testCheckboxes <- function(checkbox1=logical(), checkbox2=logical(),
+    outfile=GalaxyOutput("myoutput", "txt"))
 {
     if(!class(checkbox1) == "logical") stop("checkbox1 is not logical!")
     if(!class(checkbox2) == "logical") stop("checkbox2 is not logical!")

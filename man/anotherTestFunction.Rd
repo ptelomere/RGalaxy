@@ -10,8 +10,11 @@
 }
 
 \usage{
-anotherTestFunction(inputfile1, inputfile2, plotTitle,
-    plotSubTitle="My subtitle", outputfile1, outputfile2)
+anotherTestFunction(inputfile1=GalaxyInputFile(),
+    inputfile2=GalaxyInputFile(), plotTitle=c("TitleA"="A", "TitleB"="B"),
+    plotSubTitle="My subtitle",
+    outputfile1=GalaxyOutput("mydata", "csv"),
+    outputfile2=GalaxyOutput("myplot", "pdf"))
 }
 
 \arguments{

@@ -1,5 +1,7 @@
-functionToGalaxify2 <- function(inputfile1, inputfile2, plotTitle,
-    plotSubTitle="My subtitle", outputfile1, outputfile2)
+functionToGalaxify2 <- function(inputfile1=GalaxyInput(),
+    inputfile2=GalaxyInput(), plotTitle=character(),
+    plotSubTitle="My subtitle", outputfile1=GalaxyOutput("mydata", "csv"),
+    outputfile2=GalaxyOutput("myplot", "pdf"))
 {
     ## Make sure the file can be read
     data1 <- tryCatch({

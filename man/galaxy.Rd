@@ -10,8 +10,8 @@
 }
 
 \usage{
-galaxy(func, manpage, ..., name, package=NULL, is.exported=NULL,
-    version, galaxyConfig, packageSourceDir)
+galaxy(func, manpage, ..., name=getFriendlyName(deparse(substitute(func))), 
+    package=NULL, is.exported=NULL, version, galaxyConfig, packageSourceDir)
 }
 
 \arguments{
@@ -33,8 +33,9 @@ galaxy(func, manpage, ..., name, package=NULL, is.exported=NULL,
   }
   \item{name}{
     \bold{Required.}
-    One word to describe the action this function performs. Becomes a clickable
-    link in Galaxy.
+    Text describe the action this function performs. Becomes a clickable
+    link in Galaxy. By default, if your function is called "fooBar", 
+    \code{name} is set to "Foo Bar".
   }
   \item{package}{
     The name of the package where \code{func} lives, or NULL (the default) if 
@@ -80,13 +81,6 @@ file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
 
 galaxy(functionToGalaxify,
     manpage="functionToGalaxify",
-    inputfile1=GalaxyParam(type="data", label="Matrix 1"),
-    inputfile2=GalaxyParam(type="data", label="Matrix 2"),
-    plotTitle=GalaxyParam(type="text", label="Plot Title"),
-    plotSubTitle=GalaxyParam(type="text", label="Plot Subtitle"),
-    outputfile1=GalaxyOutput("csv"),
-    outputfile2=GalaxyOutput("pdf"),
-    name="Add",
     package="RGalaxy",
     version=packageDescription("RGalaxy")$Version,
     galaxyConfig=GalaxyConfig(galaxyHome, "mytool", "Test Section", "testSectionId"))
