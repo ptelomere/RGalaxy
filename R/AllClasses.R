@@ -171,10 +171,11 @@ GalaxyOutput <-
 }
 
 
-setClass("GalaxyInputFile", contains=c("Galaxy", "character"))
+setClass("GalaxyInputFile", contains=c("Galaxy", "character"),
+    representation("required"="logical"))
 
 
-GalaxyInputFile <- function()
+GalaxyInputFile <- function(required=TRUE)
 {
-    new("GalaxyInputFile")
+    new("GalaxyInputFile", required=required)
 }

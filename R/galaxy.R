@@ -149,6 +149,12 @@ galaxy <-
             } else {
                 xmlAttrs(paramNode)['optional'] <- "true"
             }
+            if (item$type == "GalaxyInputFile")
+            {
+                xmlAttrs(paramNode)["optional"] <- 
+                    as.character(!eval(formals(func)[[name]])@required)
+            }
+            
             xmlAttrs(paramNode)["name"] <- name
             type <- RtoGalaxyTypeMap[[item$type]]
             if (item$type == "GalaxyInputFile") type <- "data"
@@ -325,6 +331,7 @@ checkInputs <- function(a, b=1, c)
     f
 }
 
+## todo: fix so "numOTUs" returns "Num OTUs" instead of "Num O T Us"
 getFriendlyName <- function(camelName)
 {
     chars <- strsplit(camelName, split="")

@@ -11,8 +11,12 @@
     R function that you expose in Galaxy.
 }
 \usage{
-GalaxyInputFile()
+GalaxyInputFile(required=TRUE)
 }
+\arguments{
+  \item{required}{Whether to require that the user provide this dataset.}
+}
+
 
 \section{Methods}{
 No methods defined with class "GalaxyInputFile" in the signature.
