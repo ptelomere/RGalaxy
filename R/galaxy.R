@@ -27,7 +27,7 @@ editToolConfXML <-
             for (i in 1:length(toolNodes))
             {
                 node = toolNodes[[i]]
-                if (xmlAttrs(node)['file'] == expectedName) {
+                if ((!is.null(xmlAttrs(node))) && xmlAttrs(node)['file'] == expectedName) {
                     nodeToRemove <- node
                     break
                 }
