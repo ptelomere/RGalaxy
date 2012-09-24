@@ -147,12 +147,18 @@ galaxy <-
                 xmlAttrs(validatorNode)["message"] <- param@requiredMsg
                 xmlAttrs(paramNode)['optional'] <- 'false'
             } else {
-                xmlAttrs(paramNode)['optional'] <- "true"
+                validatorNode <- newXMLNode("validator", parent=paramNode)
+                xmlAttrs(validatorNode)["type"] <- "empty_field"
+                dummyParam <- GalaxyParam()
+                xmlAttrs(validatorNode)["message"] <-
+                    dummyParam@requiredMsg
+                xmlAttrs(paramNode)['optional'] <- 'false'
             }
             if (item$type == "GalaxyInputFile")
             {
-                xmlAttrs(paramNode)["optional"] <- 
-                    as.character(!eval(formals(func)[[name]])@required)
+                xmlAttrs(paramNode)["optional"] <-
+                    tolower(
+                        as.character(!eval(formals(func)[[name]])@required))
             }
             
             xmlAttrs(paramNode)["name"] <- name
@@ -162,7 +168,7 @@ galaxy <-
             xmlAttrs(paramNode)["type"] <- type
 
             if(!is.null(item$default))
-                xmlAttrs(paramNode)["value"] <- item$default
+                xmlAttrs(paramNode)["value"] <- eval(item$default)
             else
                 if (type %in% c("integer", "float"))
                     xmlAttrs(paramNode)["value"] <- ""
