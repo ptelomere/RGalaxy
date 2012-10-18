@@ -11,7 +11,8 @@
 
 \usage{
 galaxy(func, manpage, ..., name=getFriendlyName(deparse(substitute(func))), 
-    package=NULL, is.exported=NULL, version, galaxyConfig, packageSourceDir)
+    package=NULL, is.exported=NULL, version, galaxyConfig, packageSourceDir,
+    useRserve=FALSE)
 }
 
 \arguments{
@@ -58,6 +59,10 @@ galaxy(func, manpage, ..., name=getFriendlyName(deparse(substitute(func))),
     If present, points to the directory of a source package upon which to run
     \code{roxygenize()} from the \code{roxygen2} package, creating manual
     pages from source code comments.
+  }
+  \item{useRserve}{
+    Sends the function to a running Rserve for evaluation. This can
+    make functions run faster since dependencies have already been loaded.
   }
 }
 

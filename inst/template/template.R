@@ -24,7 +24,7 @@ for(param in names(opt))
         params[param] <- opt[param]
 }
 
-do.call(@FULLFUNCNAME@, params)
+@DOCALL@
 
 ## end warning handler
 }, warning = function(w) {

@@ -48,7 +48,8 @@ galaxy <-
     function(func, manpage, ..., 
         name=getFriendlyName(deparse(substitute(func))),
         package=NULL, is.exported=NULL,
-        version, galaxyConfig, packageSourceDir)
+        version, galaxyConfig, packageSourceDir,
+        useRserve=FALSE)
 {
     requiredFields <- c("func", "manpage", "galaxyConfig")
     missingFields <- character(0)
@@ -97,7 +98,7 @@ galaxy <-
     }
     
     createScriptFile(scriptFileName, func, funcName, funcInfo, paramList,
-        package, is.exported)
+        package, is.exported, useRserve)
     
     xmlFileName <- file.path(fullToolDir, paste(funcName, "xml", sep="."))
     unlink(xmlFileName)
@@ -260,7 +261,7 @@ displayFunction <- function(func, funcName)
 }
 
 createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
-    paramList, package, is.exported)
+    paramList, package, is.exported, useRserve)
 {
     unlink(scriptFileName)
 
@@ -305,6 +306,19 @@ createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
     } else {
         repList$LIBRARY <- ""
         repList$FULLFUNCNAME <- funcName
+    }
+    if (useRserve)
+    {
+        repList$LIBRARY <- "suppressPackageStartupMessages(library(RSclient))"
+        repList$DOCALL <- paste("c <- RS.connect()",
+            "RS.assign(c, 'params', params)",
+            sprintf("RS.eval(c, do.call(%s, params))", 
+                repList$FULLFUNCNAME),
+            "RS.close(c)",
+            sep="\n")
+
+    } else {
+        repList$DOCALL <- sprintf("do.call(%s, params)", repList$FULLFUNCNAME)
     }
     
     copySubstitute(system.file("template", "template.R", package="RGalaxy"),
