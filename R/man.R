@@ -35,14 +35,16 @@ getHelpFromText <- function(rd, arg)
     cont <- FALSE
     for (line in lines)
     {
-        if (length(grep("*: ", line)>0))
+        if (length(grep("^[^ ]*: ", line)>0))
         {
             segs <- strsplit(line, ": ")[[1]]
+            remainder <- segs[-1]
             thisArg <- segs[1]
             if (arg == thisArg)
             {
                 cont <- TRUE
-                ret <- c(ret, paste(segs[2:length(segs)], collapse=": "))
+                ##ret <- c(ret, paste(segs[2:length(segs)], collapse=": "))
+                ret <- c(ret, paste(remainder, collapse=": "))
             } else {
                 cont <- FALSE
             }
