@@ -194,6 +194,13 @@ galaxy <-
                         xmlAttrs(paramNode)[field] <- value
                 }
             }
+
+            if (is.null(param))
+                size <- numeric(0)
+            else
+                size <- as.character(slot(param, "size"))
+            if (type == "text" && length(size) == 0)
+                xmlAttrs(paramNode)['size'] <- "60"
             
             xmlAttrs(paramNode)['label'] <- item$label
             
