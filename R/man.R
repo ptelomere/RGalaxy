@@ -43,7 +43,6 @@ getHelpFromText <- function(rd, arg)
             if (arg == thisArg)
             {
                 cont <- TRUE
-                ##ret <- c(ret, paste(segs[2:length(segs)], collapse=": "))
                 ret <- c(ret, paste(remainder, collapse=": "))
             } else {
                 cont <- FALSE
