@@ -318,10 +318,16 @@ createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
     {
         repList$LIBRARY <- "suppressPackageStartupMessages(library(RSclient))"
         repList$DOCALL <- paste("c <- RS.connect()",
+            "RS.eval(c, options('useFancyQuotes' = FALSE))",
             "RS.assign(c, 'params', params)",
-            sprintf("RS.eval(c, do.call(%s, params))", 
+            "RS.assign(c, 'wrappedFunction', wrappedFunction)",
+            "RS.eval(c, setClass('GalaxyRemoteError', contains='character'))",
+            sprintf("res <- RS.eval(c, wrappedFunction(%s))",
                 repList$FULLFUNCNAME),
+#            sprintf("res <- RS.eval(c, do.call(%s, params))", 
+#                repList$FULLFUNCNAME),
             "RS.close(c)",
+            "if(is(res, 'GalaxyRemoteError'))stop(res)",
             sep="\n")
 
     } else {

@@ -179,3 +179,5 @@ GalaxyInputFile <- function(required=TRUE)
 {
     new("GalaxyInputFile", required=required)
 }
+
+setClass("GalaxyRemoteError", contains="character")

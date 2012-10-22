@@ -24,6 +24,14 @@ for(param in names(opt))
         params[param] <- opt[param]
 }
 
+setClass("GalaxyRemoteError", contains="character")
+wrappedFunction <- function(f)
+{
+    tryCatch(do.call(f, params),
+        error=function(e) new("GalaxyRemoteError", conditionMessage(e)))
+}
+
+
 @DOCALL@
 
 ## end warning handler
