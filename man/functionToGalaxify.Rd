@@ -10,10 +10,13 @@
 }
 
 \usage{
-functionToGalaxify(inputfile1, inputfile2, plotTitle=character(),
-    plotSubTitle="My subtitle",
+functionToGalaxify(inputfile1=GalaxyInputFile(),
+    inputfile2=GalaxyInputFile(),
+    plotTitle=GalaxyCharacterParam(testValues="test plot title"),
+    plotSubTitle=GalaxyCharacterParam("My subtitle",
+        testValues="test plot subtitle"),
     outputfile1=GalaxyOutput("mydata", "csv"),
-    outputfile2=GalaxyOutput("myplot", "pdf"))
+    outputfile2=GalaxyOutput("myplot", "png"))
 }
 
 \arguments{
@@ -33,7 +36,7 @@ functionToGalaxify(inputfile1, inputfile2, plotTitle=character(),
     The filename of the comma-separated output file to generate.
   }
   \item{outputfile2}{
-    The filename of the PDF plot file to create.
+    The filename of the PNG plot file to create.
   }
 }
 
@@ -42,7 +45,7 @@ functionToGalaxify(inputfile1, inputfile2, plotTitle=character(),
 }
 
 \seealso{
-    \code{\link{galaxy}}, \code{\link{GalaxyParam}},
+    \code{\link{galaxy}}, 
     \code{\link{GalaxyConfig}}, \code{\link{GalaxyOutput}}
 }
 \details{

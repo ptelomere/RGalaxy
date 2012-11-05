@@ -2,11 +2,33 @@ Package: RGalaxy
 Title: Make an R function available in the Galaxy web platform
 Description: Given an R function and its manual page, make the documented
     function available in Galaxy.
-Version: 1.1.1
+Version: 1.3.0
 Author: The Bioconductor Dev Team
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Infrastructure
-Depends: XML, methods, tools, optparse, digest
-Imports: BiocGenerics, Biobase, roxygen2
-Suggests: RUnit, hgu95av2.db
+Depends:
+    XML,
+    methods,
+    tools,
+    optparse,
+    digest,
+Imports:
+    BiocGenerics,
+    Biobase,
+    roxygen2
+Suggests:
+    RUnit,
+    hgu95av2.db,
+    knitr,
+    Rserve
+Enhances:
+    RSclient
 License: Artistic-2.0
+KeepSource: TRUE
+SystemRequirements: pandoc for building the vignette from source
+Collate:
+    'AllClasses.R'
+    'galaxy.R'
+    'man.R'
+    'test_functions.R'
+    'utils.R'

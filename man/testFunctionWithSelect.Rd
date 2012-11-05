@@ -4,8 +4,8 @@
 \usage{
   testFunctionWithSelect(inputfile1 = GalaxyInputFile(),
     inputfile2 = GalaxyInputFile(),
-    plotTitle = c(TitleA = "A", TitleB = "B"),
-    plotSubTitle = "My subtitle",
+    plotTitle = GalaxyCharacterParam(c(TitleA = "A", TitleB = "B"), force_select = TRUE),
+    plotSubTitle = GalaxyCharacterParam("My subtitle"),
     outputfile1 = GalaxyOutput("mydata", "csv"),
     outputfile2 = GalaxyOutput("myplot", "pdf"))
 }

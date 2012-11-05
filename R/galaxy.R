@@ -1,5 +1,7 @@
 RtoGalaxyTypeMap <- list("character"="text", "integer"="integer",
-    "numeric"="float", "logical"="boolean")
+    "numeric"="float", "logical"="boolean",
+    "GalaxyIntegerParam"="integer", "GalaxyNumericParam"="float",
+    "GalaxyCharacterParam"="text", "GalaxyLogicalParam"="boolean")
 
 
 printf <- function(...) print(noquote(sprintf(...)))
@@ -9,7 +11,7 @@ editToolConfXML <-
 {
     toolConfFile <- file.path(galaxyHome, "tool_conf.xml")
     if (!file.exists(toolConfFile))
-        stop("Invalid galaxyHome, no tool_conf.xml file!")
+        gstop("Invalid galaxyHome, no tool_conf.xml file!")
     doc <- xmlInternalTreeParse(toolConfFile)
     toolboxNode <- xpathSApply(doc, "/toolbox")
     section <- xpathSApply(doc, 
@@ -43,20 +45,50 @@ editToolConfXML <-
     saveXML(doc, file=toolConfFile)
 }
 
+
+isTestable <- function(funcInfo, funcName, package) 
+{   
+    testables <- logical(0)
+    for (info in funcInfo)
+    {
+        testable <- FALSE
+        if (!is.null(info$testValues) && length(info$testValues) > 0)
+            testable <- TRUE
+        if (length(info['type']) > 0 &&
+            info['type'] %in% c("GalaxyInputFile", "GalaxyOutput") &&
+            !is.null(package))
+        {
+            testFile <- system.file("functionalTests", funcName,
+                info$param, package=package)
+            testable <- file.exists(testFile)
+        }
+        testables <- c(testables, testable)
+    }
+    all(testables)
+}
+
+
 ## todo break into smaller functions
+## todo - handle it at the R level if a required parameter is missing.
+##     This should not happen when functions are called from Galaxy,
+##     but will arise when functions are called from R.
 galaxy <- 
-    function(func, manpage, ..., 
+    function(func, 
+        package=getPackage(func),
+        manpage=deparse(substitute(func)), 
+        ..., 
         name=getFriendlyName(deparse(substitute(func))),
-        package=NULL, is.exported=NULL,
-        version, galaxyConfig, packageSourceDir,
-        useRserve=FALSE)
+        version=getVersion(func),
+        galaxyConfig,
+        dirToRoxygenize,
+        RserveConnection=NULL)
 {
-    requiredFields <- c("func", "manpage", "galaxyConfig")
+    requiredFields <- c("func", "galaxyConfig")
     missingFields <- character(0)
     
-    if (!missing(packageSourceDir)) 
-        roxygenize(packageSourceDir, roclets=("rd"))
-    
+    if (!missing(dirToRoxygenize)) 
+        roxygenize(dirToRoxygenize, roclets=("rd"))
+
     for (requiredField in requiredFields)
     {
         is.missing <- do.call(missing, list(requiredField))
@@ -69,36 +101,43 @@ galaxy <-
     {
         msg <- "The following missing fields are required: \n"
         msg <- c(msg, paste(missingFields, collapse=", "))
-        stop(msg)
+        gstop(msg)
     }
 
     
-
-    paramList <- list(...)
-
     funcName <- deparse(substitute(func))
 
     rd <- getManPage(manpage, package)
     title <- getTitle(rd)
-    
+
     fullToolDir <- file.path(galaxyConfig@galaxyHome, "tools",
         galaxyConfig@toolDir)
     dir.create(file.path(fullToolDir), recursive=TRUE, showWarnings=FALSE)
     scriptFileName <-  file.path(fullToolDir, paste(funcName, ".R", sep=""))
     funcInfo <- list()
+
+    if  (  length(names(formals(func)))   > length(formals(func)) )
+        gstop("All arguments to Galaxy must be named.")
+
     for (param in names(formals(func)))
         funcInfo[[param]] <- getFuncInfo(func, param)
-        
+    
+
+    if (!isTestable(funcInfo, funcName, package)) 
+        gwarning("Not enough information to create a functional test.")
         
     if (!suppressWarnings(any(lapply(funcInfo,
         function(x)x$type=="GalaxyOutput"))))
     {
-        stop(paste("You must supply at least one GalaxyOutput",
+        gstop(paste("You must supply at least one GalaxyOutput",
             "object."))
     }
     
-    createScriptFile(scriptFileName, func, funcName, funcInfo, paramList,
-        package, is.exported, useRserve)
+
+
+
+    createScriptFile(scriptFileName, func, funcName, funcInfo,
+        package, RserveConnection)
     
     xmlFileName <- file.path(fullToolDir, paste(funcName, "xml", sep="."))
     unlink(xmlFileName)
@@ -112,6 +151,7 @@ galaxy <-
         version <- packageDescription(package)$Version
     xmlAttrs(xml)["name"] <- name
     xmlAttrs(xml)["version"] <- version
+
     descNode <- newXMLNode("description", newXMLTextNode(title),
         parent=xml)
     
@@ -126,33 +166,36 @@ galaxy <-
             sep="")
         
     }
+    commandText <- paste(commandText, "2>&1", sep="\n")
     
     commandNode <- newXMLNode("command", newXMLTextNode(commandText),
         parent=xml)
     xmlAttrs(commandNode)["interpreter"] <- "Rscript --vanilla"
     inputsNode <- newXMLNode("inputs", parent=xml)
     outputsNode <- newXMLNode("outputs", parent=xml)
-    
+    if (isTestable(funcInfo, funcName, package))
+        testsNode <- newXMLNode("tests", parent=xml)
     
     for (name in names(funcInfo))
     {
         item <- funcInfo[name][[1]]
-        param <- paramList[name][[1]]
+        galaxyItem <- eval(formals(func)[name][[1]])
         if (!item$type == "GalaxyOutput")
         {
             paramNode <- newXMLNode("param", parent=inputsNode)
-            if ( (!is.null(param)) && param@required)
+            if (galaxyItem@required)
             {
                 validatorNode <- newXMLNode("validator", parent=paramNode)
                 xmlAttrs(validatorNode)["type"] <- "empty_field"
-                xmlAttrs(validatorNode)["message"] <- param@requiredMsg
+                xmlAttrs(validatorNode)["message"] <- galaxyItem@requiredMsg
                 xmlAttrs(paramNode)['optional'] <- 'false'
             } else {
                 validatorNode <- newXMLNode("validator", parent=paramNode)
                 xmlAttrs(validatorNode)["type"] <- "empty_field"
-                dummyParam <- GalaxyParam()
+                ##dummyParam <- GalaxyParam()
                 xmlAttrs(validatorNode)["message"] <-
-                    dummyParam@requiredMsg
+                    galaxyItem@requiredMsg
+                    #eval(formals(func)[[name]])@requiredMsg
                 xmlAttrs(paramNode)['optional'] <- 'false'
             }
             if (item$type == "GalaxyInputFile")
@@ -176,37 +219,48 @@ galaxy <-
 
             xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, name)
             
-            if ((!is.null(param)) && length(param@label))
-                item$label <- param@label
-            
-            attributeFields <- c("label",  "min", "max",
-                "force_select", "display", "checked", "size")
-            if ( (!is.null(param)) && param@required){
+            if (length(galaxyItem@label)) ## this really should always be true!
+                item$label <- galaxyItem@label
+
+            if ( galaxyItem@required){
                 item$label <- paste("[required]", item$label)
-                
             }
-            for (field in attributeFields)
+            
+
+            if (type == "boolean")
             {
-                if (!is.null(param))
-                {
-                    value <- as.character(slot(param, field))
-                    if (length(value) > 0)
-                        xmlAttrs(paramNode)[field] <- value
-                }
+                if (length(galaxyItem@checked))
+                    xmlAttrs(paramNode)['checked'] <-
+                        tolower(as.character(galaxyItem@checked))
             }
 
-            if (is.null(param))
-                size <- numeric(0)
-            else
-                size <- as.character(slot(param, "size"))
-            if (type == "text" && length(size) == 0)
-                xmlAttrs(paramNode)['size'] <- "60"
+            if (type == "text") {
+                galaxyItem
+                if (length(galaxyItem@size))
+                xmlAttrs(paramNode)['size'] = as.character(galaxyItem@size)
+            }
+
+            if(type %in% c("integer", "float"))
+            {
+                if(length(galaxyItem@min))
+                    xmlAttrs(paramNode)['min'] <- as.character(galaxyItem@min)
+                if(length(galaxyItem@max))
+                    xmlAttrs(paramNode)['max'] <- as.character(galaxyItem@max)
+            }
+
             
             xmlAttrs(paramNode)['label'] <- item$label
             
             
             if (type=="select")
             {
+                xmlAttrs(paramNode)['force_select'] <-
+                    as.character(galaxyItem@force_select)
+                if (length(galaxyItem@display))
+                    xmlAttrs(paramNode)['display'] <-
+                        as.character(galaxyItem@display)
+
+
                 if (!is.null(item$selectoptions))
                 {
                     selectoptions <- eval(item$selectoptions)
@@ -230,7 +284,7 @@ galaxy <-
         {
             dataNode <- newXMLNode("data", parent=outputsNode)
             if (is.null(item$default))
-                stop(sprintf("GalaxyOutput '%s' must have a parameter.", name))
+                gstop(sprintf("GalaxyOutput '%s' must have a parameter.", name))
             galaxyOutput <- eval(item$default)
             xmlAttrs(dataNode)["format"] <- galaxyOutput@format
             xmlAttrs(dataNode)["name"] <- name
@@ -239,6 +293,34 @@ galaxy <-
         }
     }
     
+    if (isTestable(funcInfo, funcName, package))
+    {
+        testDataDir <- file.path(galaxyConfig@galaxyHome, "test-data", funcName)
+        if (!file.exists(testDataDir))
+            dir.create(testDataDir)
+        #testFileDest <- file.path(funcName)
+        testNode <- newXMLNode("test", parent=testsNode)
+        for (info in funcInfo)
+        {
+            testParamNode <- newXMLNode("param", parent=testNode)
+            xmlAttrs(testParamNode)["name"] <- info$param
+            if (length(info$type) > 0 && 
+                info$type %in% c("GalaxyInputFile", "GalaxyOutput"))
+            {
+                srcFile <- system.file("functionalTests", funcName, info$param,
+                    package=package)
+                if (!file.exists(file.path(testDataDir, info$param)))
+                    file.copy(srcFile, testDataDir)
+                xmlAttrs(testParamNode)["file"] <-
+                    sprintf("%s/%s", funcName, info$param)
+            }
+            if (!is.null(info$testValues) && length(info$testValues) > 0)
+            {
+                ## for now, just assume one value
+                xmlAttrs(testParamNode)['value'] <- info$testValues
+            }
+        }
+    }
     
     helpText <- ""
     helpText <- generateHelpText(rd)
@@ -253,7 +335,8 @@ generateHelpText <- function(rd)
     ret <- character(0)
     ret <- c(ret, "", "**Description**", "",
         parseSectionFromText(rd, "Description"))
-    ret <- c(ret, "", "**Details**", "", parseSectionFromText(rd, "Details"))
+    ret <- c(ret, "", "**Details**", "",
+        parseSectionFromText(rd, "Details", FALSE))
     
     paste(ret, collapse="\n")
 }
@@ -268,7 +351,7 @@ displayFunction <- function(func, funcName)
 }
 
 createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
-    paramList, package, is.exported, useRserve)
+    package, RserveConnection)
 {
     unlink(scriptFileName)
 
@@ -290,6 +373,11 @@ createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
         else
             type <- item$type
         if (type %in% c("GalaxyOutput", "GalaxyInputFile")) type <- "character"
+        # TODO - more idiomatically
+        if (type == "GalaxyCharacterParam") type <- "character"
+        if (type == "GalaxyIntegerParam") type <- "integer"
+        if (type == "GalaxyNumericParam") type <- "numeric"
+        if (type == "GalaxyLogicalParam") type <- "logical"
         repVal <- paste(repVal, "option_list$",
             sprintf("%s <- make_option('--%s', type='%s')\n",
             name, name, type),
@@ -302,36 +390,34 @@ createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
         repList$FUNCTION <- "## function body not needed here, it is in package"
         repList$LIBRARY <- paste("suppressPackageStartupMessages(library(", package, "))", sep="")
         do.call(library, list(package))
-        if ((!is.null(is.exported)) && length(is.exported)>0 && 
-            is.exported==FALSE)
-        {
-            repList$FULLFUNCNAME <- sprintf("%s:::%s", package, funcName)
-        } else {
-            repList$FULLFUNCNAME <- funcName
-        }
-        
+        repList$FULLFUNCNAME <- funcName
     } else {
         repList$LIBRARY <- ""
         repList$FULLFUNCNAME <- funcName
     }
-    if (useRserve)
+    if (!is.null(RserveConnection))
     {
         repList$LIBRARY <- "suppressPackageStartupMessages(library(RSclient))"
-        repList$DOCALL <- paste("c <- RS.connect()",
+        repList$DOCALL <- 
+            paste(sprintf("c <- RS.connect(host=%s, port=%s)",
+                RserveConnection@host,
+                RserveConnection@port),
             "RS.eval(c, options('useFancyQuotes' = FALSE))",
+            "RS.eval(c, suppressPackageStartupMessages(library(RGalaxy)))",
             "RS.assign(c, 'params', params)",
             "RS.assign(c, 'wrappedFunction', wrappedFunction)",
             "RS.eval(c, setClass('GalaxyRemoteError', contains='character'))",
             sprintf("res <- RS.eval(c, wrappedFunction(%s))",
                 repList$FULLFUNCNAME),
-#            sprintf("res <- RS.eval(c, do.call(%s, params))", 
-#                repList$FULLFUNCNAME),
             "RS.close(c)",
-            "if(is(res, 'GalaxyRemoteError'))stop(res)",
+            "if(is(res, 'GalaxyRemoteError'))gstop(res)",
             sep="\n")
 
     } else {
-        repList$DOCALL <- sprintf("do.call(%s, params)", repList$FULLFUNCNAME)
+        repList$DOCALL <- sprintf(
+            paste("suppressPackageStartupMessages(library(RGalaxy))",
+            "do.call(%s, params)", sep="\n"),
+            repList$FULLFUNCNAME)
     }
     
     copySubstitute(system.file("template", "template.R", package="RGalaxy"),
@@ -344,7 +430,7 @@ getSupportedExtensions <- function(galaxyHome=".")
     if (!file.exists(confFile))
     {
         confFile <- system.file("galaxy", "datatypes_conf.xml", package="RGalaxy")
-        if (!file.exists(confFile)) stop("datatypes_conf not found!")
+        if (!file.exists(confFile)) gstop("datatypes_conf not found!")
     }
     doc <- xmlInternalTreeParse(confFile)
     extNodes <- xpathSApply(doc, "/datatypes/registration/datatype")
@@ -364,7 +450,7 @@ checkInputs <- function(a, b=1, c)
     f
 }
 
-## todo: fix so "numOTUs" returns "Num OTUs" instead of "Num O T Us"
+## TODO: fix so "numOTUs" returns "Num OTUs" instead of "Num O T Us"
 getFriendlyName <- function(camelName)
 {
     chars <- strsplit(camelName, split="")
@@ -383,20 +469,23 @@ getFriendlyName <- function(camelName)
 getFuncInfo <- function(func, param)
 {
     ret <- list()
+    ret$param <- param
     ret$selectoptions <- NULL
     f <- formals(func)[[param]]
     cl <- NULL
     tryCatch(cl <- class(eval(f)), error=function(x){})
     if (is.null(cl))
-        stop(sprintf("No type specified for parameter '%s'.", param))
+        gstop(sprintf("No type specified for parameter '%s'.", param))
     ret$type <- class(eval(f))
+    if (!extends(ret$type, "Galaxy"))
+        gstop("'%s' must be a Galaxy class.")
     if (ret$type == "list") 
     {
         msg <- sprintf("'list' is an invalid type for parameter '%s'.\n",
             param)
         msg <- c(msg,
-            "Use a homogeneous type like 'integer', 'character', etc.")
-        stop(msg)
+            "Use a subclass of GalaxyParam")
+        gstop(msg)
     }
     ret$length <- length(eval(f))
     if (ret$length == 1)
@@ -406,5 +495,58 @@ getFuncInfo <- function(func, param)
     else
         ret$selectoptions <- f
     ret$label <- getFriendlyName(param)
+    if (extends(cl, "GalaxyNonFileParam"))
+        ret$testValues <- eval(f)@testValues
+    else
+        ret$testValues <- NULL
     return(ret)
+}
+
+##' Run the functional test associated with a function.
+##' 
+##' FIXME
+##' @return Whether the test passes.
+##' @param func A function to be exposed in Galaxy.
+runFunctionalTest <- function(func)
+{
+    funcName <- deparse(substitute(func))
+    package <- getPackage(func)
+    funcInfo <- list()
+    for (param in names(formals(func)))
+        funcInfo[[param]] <- getFuncInfo(func, param)
+
+    if (is.null(package))
+        gstop("Function must be in a package.")
+    if (!isTestable(funcInfo, funcName, package)) 
+        gstop("Not enough information to run functional test.")
+    params <- list()
+    outfiles <- list()
+    fixtures <- list()
+    for (info in funcInfo)
+    {
+        if (info$type == "GalaxyOutput")
+        {
+            outfiles[info$param] <- tempfile()
+            params[info$param] <- outfiles[info$param]
+        } else if (info$type == "GalaxyInputFile") {
+            params[info$param] <- system.file("functionalTests",
+                funcName, info$param, package=package)
+        } else {
+            params[info$param] <- info$testValues
+        }
+    }
+    res <- do.call(func, params)
+    diffOK <- logical(0)
+    for (outfilename in names(outfiles))
+    {
+
+        generated <- unlist(outfiles[outfilename])
+        fixture <- system.file("functionalTests",
+            funcName, funcInfo[[outfilename]]$param, package=package)
+        diff <- tools:::md5sum(generated) == tools:::md5sum(fixture)
+        diffOK <- c(diffOK, diff)
+        if(!diff)
+            gwarning("Generated '%s' differs from fixture", unname(outfilename))
+    }
+    all(diffOK)
 }

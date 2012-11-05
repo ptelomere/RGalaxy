@@ -47,7 +47,7 @@ No methods defined with class "GalaxyConfig" in the signature.
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{link{galaxy}}, \code{link{GalaxyParam}}, \code{\link{GalaxyOutput}}
+\code{link{galaxy}}, \code{\link{GalaxyOutput}}
 %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
 }

@@ -10,9 +10,16 @@
 }
 
 \usage{
-galaxy(func, manpage, ..., name=getFriendlyName(deparse(substitute(func))), 
-    package=NULL, is.exported=NULL, version, galaxyConfig, packageSourceDir,
-    useRserve=FALSE)
+galaxy(func, 
+        package=getPackage(func),
+        manpage=deparse(substitute(func)), 
+        ..., 
+        name=getFriendlyName(deparse(substitute(func))),
+        version=getVersion(func),
+        galaxyConfig,
+        dirToRoxygenize,
+        RserveConnection=NULL)
+
 }
 
 \arguments{
@@ -22,32 +29,32 @@ galaxy(func, manpage, ..., name=getFriendlyName(deparse(substitute(func))),
     entirely-self contained, and should accept as arguments the full paths
     to its input and output file(s).
   }
+  \item{package}{
+    The name of the package where \code{func} lives, or NULL if 
+    it is not in a package. By default, \code{RGalaxy} will try to determine
+    which package the code lives in and set the parameter to NULL if it 
+    cannot.
+  }
+
   \item{manpage}{
-    \bold{Required.}
     The full path to the Rd-formatted manual page for the function, 
-    or if \code{package} is specified, an alias that will pull up that manpage.
+    or if the \code{func} is in a package, an alias that will pull up
+    that manpage.
   }
   \item{...}{
     \bold{Required.}
-    A list of at least one \code{\link{GalaxyParam}} object and at
+    A list of at least one \code{\link{GalaxyInputFile}} and/or
+    \code{\link{GalaxyParam}} child classes and at
     least one \code{\link{GalaxyOutput}} objects.
+    All of these parameters must be named.
   }
   \item{name}{
-    \bold{Required.}
     Text describe the action this function performs. Becomes a clickable
     link in Galaxy. By default, if your function is called "fooBar", 
     \code{name} is set to "Foo Bar".
   }
-  \item{package}{
-    The name of the package where \code{func} lives, or NULL (the default) if 
-    it is not in a package. 
-  }
-  \item{is.exported}{
-    If \code{package} is supplied, a logical indicating whether \code{func} is 
-    exported from \code{package}.
-  }
   \item{version}{
-    The version of this function. If \code{package} is \code{TRUE},
+    The version of this function. If \code{func} lives in a package,
     defaults to the version of \code{package}.
   }
   \item{galaxyConfig}{
@@ -55,14 +62,17 @@ galaxy(func, manpage, ..., name=getFriendlyName(deparse(substitute(func))),
     A \code{link{GalaxyConfig}} object describing your
     Galaxy configuration.
   }
-  \item{packageSourceDir}{
+  \item{dirToRoxygenize}{
     If present, points to the directory of a source package upon which to run
     \code{roxygenize()} from the \code{roxygen2} package, creating manual
     pages from source code comments.
   }
-  \item{useRserve}{
-    Sends the function to a running Rserve for evaluation. This can
+  \item{RserveConnection}{
+    If set (by calling \code{\link{RserveConnection}}), 
+    sends the function to a running Rserve for evaluation. This can
     make functions run faster since dependencies have already been loaded.
+    If NULL (the default), function is run normally.
+    See vignette for more information.
   }
 }
 
@@ -71,8 +81,10 @@ galaxy(func, manpage, ..., name=getFriendlyName(deparse(substitute(func))),
 }
 
 \seealso{
-    \code{\link{GalaxyParam}}, \code{\link{GalaxyConfig}},
-    \code{\link{GalaxyOutput}}
+   \code{\link{GalaxyConfig}},
+   \code{\link{GalaxyOutput}},
+   \code{\link{GalaxyParam}}
+
 }
 
 \examples{
@@ -85,10 +97,8 @@ file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
 
 
 galaxy(functionToGalaxify,
-    manpage="functionToGalaxify",
-    package="RGalaxy",
-    version=packageDescription("RGalaxy")$Version,
-    galaxyConfig=GalaxyConfig(galaxyHome, "mytool", "Test Section", "testSectionId"))
-
+    galaxyConfig=GalaxyConfig(galaxyHome, "mytool",
+      "Test Section", "testSectionId"),
+    RserveConnection=RserveConnection())
 }
 

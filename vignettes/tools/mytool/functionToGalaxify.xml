@@ -1,0 +1,61 @@
+<tool id="functionToGalaxify" name="Add" version="0.99.10">
+  <description>Add two matrices</description>
+  <command interpreter="Rscript --vanilla">functionToGalaxify.R
+       #if str($inputfile1).strip() != "":
+          --inputfile1="$inputfile1"
+       #end if
+       #if str($inputfile2).strip() != "":
+          --inputfile2="$inputfile2"
+       #end if
+       #if str($plotTitle).strip() != "":
+          --plotTitle="$plotTitle"
+       #end if
+       #if str($plotSubTitle).strip() != "":
+          --plotSubTitle="$plotSubTitle"
+       #end if
+       #if str($outputfile1).strip() != "":
+          --outputfile1="$outputfile1"
+       #end if
+       #if str($outputfile2).strip() != "":
+          --outputfile2="$outputfile2"
+       #end if
+</command>
+  <inputs>
+    <param optional="true" name="inputfile1" type="data" help="The filename of the 'first' tab-separated matrix."/>
+    <param optional="true" name="inputfile2" type="data" help="The filename of the second tab-separated matrix."/>
+    <param optional="true" name="plotTitle" type="text" help="The title of the plot to create."/>
+    <param optional="true" name="plotSubTitle" type="text" value="My subtitle" help="The subtitle of the plot to create."/>
+  </inputs>
+  <outputs>
+    <data format="csv" name="outputfile1" label="mydata.csv"/>
+    <data format="pdf" name="outputfile2" label="myplot.pdf"/>
+  </outputs>
+  <help>
+**Description**
+
+An example function that can be made into a Galaxy tool.  Reads
+matrices from two tab-delimited files, adds them, and writes the
+result to a comma-separated file and a PDF plot.
+
+
+**Details**
+
+This trivial method illustrates some best practices to use when
+writing functions to be adapted as Galaxy tools. For example, any
+error conditions should be handled with 'stop' with a
+useful/informative error message. The Galaxy user will see these
+messages if an error occurs.
+
+Functions which take datasets as input should accept as arguments
+the filenames pointing to those datasets. The Galaxy user
+interface will allow the user to chose the dataset graphically.
+
+Return values of functions are ignored. Function output should be
+written to one or more files, and the names of these files should
+be passed into the function as arguments.
+
+Functions should be documented with a manual page. 'RGalaxy' will
+use this manual page to fill in relevant sections of the Galaxy
+XML file.
+</help>
+</tool>

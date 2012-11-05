@@ -22,7 +22,7 @@ getFriendlyName(camelName)
 }
 
 \seealso{
-    \code{\link{galaxy}}, \code{\link{GalaxyParam}},
+    \code{\link{galaxy}},
     \code{\link{GalaxyConfig}}, \code{\link{GalaxyOutput}}
 }
 \details{

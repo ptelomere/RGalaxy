@@ -2,8 +2,9 @@
 \alias{foo}
 \title{a foo function}
 \usage{
-  foo(input = GalaxyInputFile(), x = numeric(), y = TRUE,
-    z = c("Seattle", "Tacoma", "Olympia"),
+  foo(input = GalaxyInputFile(), x = GalaxyNumericParam(),
+    y = TRUE,
+    z = GalaxyCharacterParam(c("Seattle", "Tacoma", "Olympia")),
     output = GalaxyOutput("pdf"))
 }
 \arguments{

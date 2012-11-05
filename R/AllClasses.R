@@ -5,7 +5,7 @@ setRefClass("MsgClass",
 )
 
 
-setClass("Galaxy")
+setClass("Galaxy", contains="VIRTUAL")
 
 setClass("GalaxyConfig", contains="Galaxy",
     representation("galaxyHome"="character",
@@ -60,7 +60,19 @@ setClass("GalaxyParam",
         required="logical",
         requiredMsg="character"
         
-    ), contains="Galaxy", validity=function(object){
+    ), 
+    prototype=list(
+            label=character(0),
+            min=numeric(0),
+            max=numeric(0),
+            force_select=FALSE,
+            display=character(0),
+            checked=FALSE,
+            size=60L,
+            required=FALSE,
+            requiredMsg="This field is required."
+        ),
+    contains=c("Galaxy","VIRTUAL"), validity=function(object){
         
         empty <- function(x) {
             return(length(slot(object, x))==0)
@@ -143,6 +155,29 @@ GalaxyParam <- function(
         size=size, required=required, requiredMsg=requiredMsg)
 }
 
+
+setClass("GalaxyNonFileParam", contains=c("GalaxyParam", "VIRTUAL"))
+
+GalaxyIntegerParam = setClass("GalaxyIntegerParam",
+    representation(testValues="integer"),
+    contains=c("GalaxyNonFileParam", "integer"))
+
+GalaxyNumericParam = setClass("GalaxyNumericParam",
+    representation(testValues="numeric"),
+    contains=c("GalaxyNonFileParam", "numeric"))
+
+GalaxyCharacterParam = setClass("GalaxyCharacterParam",
+    representation(testValues="character"),
+    contains=c("GalaxyNonFileParam", "character"))
+
+GalaxyLogicalParam = setClass("GalaxyLogicalParam",
+    representation(testValues="logical"),
+    contains=c("GalaxyNonFileParam", "logical"))
+
+
+
+
+
 setClass("GalaxyOutput", representation(format="character"),
     contains=c("Galaxy", "character"), validity=function(object){
         empty <- function(x) {
@@ -171,7 +206,7 @@ GalaxyOutput <-
 }
 
 
-setClass("GalaxyInputFile", contains=c("Galaxy", "character"),
+setClass("GalaxyInputFile", contains=c("GalaxyParam", "character"),
     representation("required"="logical"))
 
 
@@ -181,3 +216,9 @@ GalaxyInputFile <- function(required=TRUE)
 }
 
 setClass("GalaxyRemoteError", contains="character")
+
+RserveConnection <- setClass("RserveConnection", contains="Galaxy",
+    representation("host"="character",
+        port="integer"),
+    prototype=list("host"="localhost",
+        "port"=6311L))

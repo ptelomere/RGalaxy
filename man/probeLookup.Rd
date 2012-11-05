@@ -10,7 +10,9 @@
 }
 
 \usage{
-probeLookup(probe_ids=character(),
+probeLookup(probe_ids=GalaxyCharacterParam(
+  required=TRUE,
+  testValues="1002_f_at 1003_s_at"),
     outputfile=GalaxyOutput("probeLookup", "csv"))
 }
 
@@ -25,6 +27,12 @@ probeLookup(probe_ids=character(),
 
 \value{
   invisible(NULL)
+}
+
+\examples{
+  t <- tempfile()
+  probeLookup("1002_f_at 1003_s_at", t)
+  readLines(t)
 }
 
 \details{

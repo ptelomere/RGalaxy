@@ -32,7 +32,7 @@ No methods defined with class "GalaxyOutput" in the signature.
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{link{galaxy}}, \code{\link{GalaxyConfig}}, \code{\link{GalaxyParam}}
+\code{link{galaxy}}, \code{\link{GalaxyConfig}}
 %%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 %%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
 }
