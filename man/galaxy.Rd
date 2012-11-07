@@ -95,10 +95,10 @@ dir.create(galaxyHome, recursive=TRUE, showWarnings=FALSE)
 file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
     file.path(galaxyHome, "tool_conf.xml"), overwrite=FALSE)
 
-
+\dontrun{
 galaxy(functionToGalaxify,
     galaxyConfig=GalaxyConfig(galaxyHome, "mytool",
       "Test Section", "testSectionId"),
     RserveConnection=RserveConnection())
 }
-
+}
