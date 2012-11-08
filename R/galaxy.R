@@ -76,7 +76,6 @@ galaxy <-
     function(func, 
         package=getPackage(func),
         manpage=deparse(substitute(func)), 
-        ..., 
         name=getFriendlyName(deparse(substitute(func))),
         version=getVersion(func),
         galaxyConfig,

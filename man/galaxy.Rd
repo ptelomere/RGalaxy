@@ -13,7 +13,6 @@
 galaxy(func, 
         package=getPackage(func),
         manpage=deparse(substitute(func)), 
-        ..., 
         name=getFriendlyName(deparse(substitute(func))),
         version=getVersion(func),
         galaxyConfig,
@@ -40,13 +39,6 @@ galaxy(func,
     The full path to the Rd-formatted manual page for the function, 
     or if the \code{func} is in a package, an alias that will pull up
     that manpage.
-  }
-  \item{...}{
-    \bold{Required.}
-    A list of at least one \code{\link{GalaxyInputFile}} and/or
-    \code{\link{GalaxyParam}} child classes and at
-    least one \code{\link{GalaxyOutput}} objects.
-    All of these parameters must be named.
   }
   \item{name}{
     Text describe the action this function performs. Becomes a clickable
