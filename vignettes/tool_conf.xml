@@ -8,5 +8,6 @@
   </section>
   <section name="Test Section" id="testSectionId">
     <tool file="mytool/functionToGalaxify.xml"/>
+    <tool file="mytool/addTwoNumbers.xml"/>
   </section>
 </toolbox>
