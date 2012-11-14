@@ -23,7 +23,7 @@ RGalaxy-vignette.pdf:
 	rm -f *.R
 	$(RSCRIPT) --vanilla -e "library(knitr);knit('RGalaxy-vignette.Rmd')"
 	$(RSCRIPT) --vanilla -e "library(knitr);purl('RGalaxy-vignette.Rmd')"
-	markdown2pdf -o RGalaxy-vignette.pdf RGalaxy-vignette.md
+	pandoc -o RGalaxy-vignette.pdf RGalaxy-vignette.md
 	cp RGalaxy-vignette.md ../inst/doc
 	cp RGalaxy-vignette.R ../inst/doc/RGalaxy-vignette.R.txt
 
