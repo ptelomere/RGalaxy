@@ -3,6 +3,8 @@
 ## begin warning handler
 withCallingHandlers({
 
+library(methods) # Because Rscript does not always do this
+
 options('useFancyQuotes' = FALSE)
 
 suppressPackageStartupMessages(library("optparse"))
