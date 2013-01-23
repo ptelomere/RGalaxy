@@ -332,11 +332,12 @@ galaxy <-
 generateHelpText <- function(rd)
 {
     ret <- character(0)
-    ret <- c(ret, "", "**Description**", "",
-        parseSectionFromText(rd, "Description"))
-    ret <- c(ret, "", "**Details**", "",
-        parseSectionFromText(rd, "Details", FALSE))
-    
+    for (section in c("Description", "Details"))
+    {
+        section <- parseSectionFromText(rd, section, FALSE)
+        if (nchar(section))
+            ret <- c(ret, "", sprintf("**%s**", section))
+    }
     paste(ret, collapse="\n")
 }
 
