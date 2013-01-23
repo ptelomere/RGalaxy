@@ -480,7 +480,7 @@ getFuncInfo <- function(func, param)
         gstop(sprintf("No type specified for parameter '%s'.", param))
     ret$type <- class(eval(f))
     if (!extends(ret$type, "Galaxy"))
-        gstop("'%s' must be a Galaxy class.")
+        gstop("'%s' must be a Galaxy class.", ret$type)
     if (ret$type == "list") 
     {
         msg <- sprintf("'list' is an invalid type for parameter '%s'.\n",
