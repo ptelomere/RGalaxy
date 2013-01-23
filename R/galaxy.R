@@ -334,9 +334,9 @@ generateHelpText <- function(rd)
     ret <- character(0)
     for (section in c("Description", "Details"))
     {
-        section <- parseSectionFromText(rd, section, FALSE)
+        txt <- parseSectionFromText(rd, section, FALSE)
         if (nchar(section))
-            ret <- c(ret, "", sprintf("**%s**", section))
+            ret <- c(ret, "", sprintf("**%s**", section), "", txt)
     }
     paste(ret, collapse="\n")
 }
