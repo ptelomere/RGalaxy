@@ -59,13 +59,14 @@ gwarning <-
     warning(.msg(...), call.=call., immediate.=immediate.)
 }
 
-.printf <- function(...) cat(noquote(sprintf(...)))
+.printf <- function(...) cat(noquote(sprintf(...)), "\n")
 
 getPackage <- function(func)
 {
-    funcName <- deparse(substitute(func))
+    if (is.character(func))
+        f <- match.fun(func)
     env <- NULL
-    tryCatch(env <- environment(func),
+    tryCatch(env <- environment(f),
         error=function(x) {})
     if (is.null(env)) return(NULL)
     name <- environmentName(env)
@@ -76,7 +77,6 @@ getPackage <- function(func)
 
 getVersion <- function(func)
 {
-    funcName <- deparse(substitute(func))
     tryCatch(packageDescription(getPackage(func))$Version,
         error=function(x) NULL)
 }

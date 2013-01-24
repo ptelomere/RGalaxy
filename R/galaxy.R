@@ -67,6 +67,13 @@ isTestable <- function(funcInfo, funcName, package)
     all(testables)
 }
 
+getManPageName <- function(func)
+{
+    if (is.function(func))
+        return(deparse(substitute(func)))
+    else if (is.character(func))
+        return(func)
+}
 
 ## todo break into smaller functions
 ## todo - handle it at the R level if a required parameter is missing.
@@ -75,13 +82,25 @@ isTestable <- function(funcInfo, funcName, package)
 galaxy <- 
     function(func, 
         package=getPackage(func),
-        manpage=deparse(substitute(func)), 
-        name=getFriendlyName(deparse(substitute(func))),
+        manpage=getManPageName(func), 
+        name=getFriendlyName(func),
         version=getVersion(func),
         galaxyConfig,
         dirToRoxygenize,
         RserveConnection=NULL)
 {
+#    force(manpage)
+    if (is.function(func))
+    {
+        funcName <- deparse(substitute(func))
+        functionToGalaxify <- func        
+    }
+    else if (is.character(func))
+    {
+        funcName <- func
+        functionToGalaxify <- match.fun(func)
+    }
+
     requiredFields <- c("func", "galaxyConfig")
     missingFields <- character(0)
     
@@ -104,7 +123,6 @@ galaxy <-
     }
 
     
-    funcName <- deparse(substitute(func))
 
     rd <- getManPage(manpage, package)
     title <- getTitle(rd)
@@ -115,11 +133,11 @@ galaxy <-
     scriptFileName <-  file.path(fullToolDir, paste(funcName, ".R", sep=""))
     funcInfo <- list()
 
-    if  (  length(names(formals(func)))   > length(formals(func)) )
+    if  (  length(names(formals(functionToGalaxify)))   > length(formals(functionToGalaxify)) )
         gstop("All arguments to Galaxy must be named.")
 
-    for (param in names(formals(func)))
-        funcInfo[[param]] <- getFuncInfo(func, param)
+    for (param in names(formals(functionToGalaxify)))
+        funcInfo[[param]] <- getFuncInfo(functionToGalaxify, param)
     
 
     if (!isTestable(funcInfo, funcName, package)) 
@@ -135,7 +153,7 @@ galaxy <-
 
 
 
-    createScriptFile(scriptFileName, func, funcName, funcInfo,
+    createScriptFile(scriptFileName, functionToGalaxify, funcName, funcInfo,
         package, RserveConnection)
     
     xmlFileName <- file.path(fullToolDir, paste(funcName, "xml", sep="."))
@@ -156,11 +174,11 @@ galaxy <-
     
     commandText <- paste(funcName, ".R\n", sep="")
     
-    for (name in names(funcInfo))
+    for (nm in names(funcInfo))
     {
         commandText <- paste(commandText, "       ",
-            sprintf("#if str($%s).strip() != \"\":\n", name),
-            "          ", sprintf("--%s=\"$%s\"", name, name),
+            sprintf("#if str($%s).strip() != \"\":\n", nm),
+            "          ", sprintf("--%s=\"$%s\"", nm, nm),
             "\n       #end if\n",
             sep="")
         
@@ -175,10 +193,10 @@ galaxy <-
     if (isTestable(funcInfo, funcName, package))
         testsNode <- newXMLNode("tests", parent=xml)
     
-    for (name in names(funcInfo))
+    for (nm in names(funcInfo))
     {
-        item <- funcInfo[name][[1]]
-        galaxyItem <- eval(formals(func)[name][[1]])
+        item <- funcInfo[nm][[1]]
+        galaxyItem <- eval(formals(functionToGalaxify)[nm][[1]])
         if (!item$type == "GalaxyOutput")
         {
             paramNode <- newXMLNode("param", parent=inputsNode)
@@ -194,17 +212,16 @@ galaxy <-
                 ##dummyParam <- GalaxyParam()
                 xmlAttrs(validatorNode)["message"] <-
                     galaxyItem@requiredMsg
-                    #eval(formals(func)[[name]])@requiredMsg
                 xmlAttrs(paramNode)['optional'] <- 'false'
             }
             if (item$type == "GalaxyInputFile")
             {
                 xmlAttrs(paramNode)["optional"] <-
                     tolower(
-                        as.character(!eval(formals(func)[[name]])@required))
+                        as.character(!eval(formals(functionToGalaxify)[[nm]])@required))
             }
             
-            xmlAttrs(paramNode)["name"] <- name
+            xmlAttrs(paramNode)["nm"] <- nm
             type <- RtoGalaxyTypeMap[[item$type]]
             if (item$type == "GalaxyInputFile") type <- "data"
             if (item$length > 1) type <- "select"
@@ -216,7 +233,7 @@ galaxy <-
                 if (type %in% c("integer", "float"))
                     xmlAttrs(paramNode)["value"] <- ""
 
-            xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, name)
+            xmlAttrs(paramNode)["help"] <- getHelpFromText(rd, nm)
             
             if (length(galaxyItem@label)) ## this really should always be true!
                 item$label <- galaxyItem@label
@@ -283,10 +300,10 @@ galaxy <-
         {
             dataNode <- newXMLNode("data", parent=outputsNode)
             if (is.null(item$default))
-                gstop(sprintf("GalaxyOutput '%s' must have a parameter.", name))
+                gstop(sprintf("GalaxyOutput '%s' must have a parameter.", nm))
             galaxyOutput <- eval(item$default)
             xmlAttrs(dataNode)["format"] <- galaxyOutput@format
-            xmlAttrs(dataNode)["name"] <- name
+            xmlAttrs(dataNode)["name"] <- nm
             xmlAttrs(dataNode)["label"] <- as.character(galaxyOutput)
             
         }
@@ -456,7 +473,11 @@ checkInputs <- function(a, b=1, c)
 ## TODO: fix so "numOTUs" returns "Num OTUs" instead of "Num O T Us"
 getFriendlyName <- function(camelName)
 {
-    chars <- strsplit(camelName, split="")
+    if (is.function(camelName))
+        input <- deparse(substitute(camelName))
+    else
+        input <- camelName
+    chars <- strsplit(input, split="")
     ret <- ""
     i <- 1
     for (char in chars[[1]])
