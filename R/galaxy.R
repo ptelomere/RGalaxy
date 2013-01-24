@@ -222,7 +222,7 @@ galaxy <-
                         as.character(!eval(formals(functionToGalaxify)[[nm]])@required))
             }
             
-            xmlAttrs(paramNode)["nm"] <- nm
+            xmlAttrs(paramNode)["name"] <- nm
             type <- RtoGalaxyTypeMap[[item$type]]
             if (item$type == "GalaxyInputFile") type <- "data"
             if (item$length > 1) type <- "select"
