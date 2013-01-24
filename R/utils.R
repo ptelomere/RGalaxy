@@ -63,8 +63,7 @@ gwarning <-
 
 getPackage <- function(func)
 {
-    if (is.character(func))
-        f <- match.fun(func)
+    f <- match.fun(func)
     env <- NULL
     tryCatch(env <- environment(f),
         error=function(x) {})

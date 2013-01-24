@@ -67,7 +67,8 @@ isTestable <- function(funcInfo, funcName, package)
     all(testables)
 }
 
-getManPageName <- function(func)
+
+getFuncName <- function(func)
 {
     if (is.function(func))
         return(deparse(substitute(func)))
@@ -81,10 +82,10 @@ getManPageName <- function(func)
 ##     but will arise when functions are called from R.
 galaxy <- 
     function(func, 
-        package=getPackage(func),
-        manpage=getManPageName(func), 
-        name=getFriendlyName(func),
-        version=getVersion(func),
+        package=getPackage(getFuncName(func)),
+        manpage=(getFuncName(func)), 
+        name=getFriendlyName(getFuncName(func)),
+        version=getVersion(getFuncName(func)),
         galaxyConfig,
         dirToRoxygenize,
         RserveConnection=NULL)
