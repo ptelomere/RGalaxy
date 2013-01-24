@@ -105,8 +105,8 @@ galaxy <-
     requiredFields <- c("func", "galaxyConfig")
     missingFields <- character(0)
     
-    if (!missing(dirToRoxygenize)) 
-        roxygenize(dirToRoxygenize, roclets=("rd"))
+#    if (!missing(dirToRoxygenize)) 
+#        roxygenize(dirToRoxygenize, roclets=("rd"))
 
     for (requiredField in requiredFields)
     {
