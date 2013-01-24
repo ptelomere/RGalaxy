@@ -420,7 +420,7 @@ createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
                 "biocLite('RSclient', siteRepos='http://www.rforge.net')"))
         repList$LIBRARY <- "suppressPackageStartupMessages(library(RSclient))"
         repList$DOCALL <- 
-            paste(sprintf("c <- RS.connect(host=%s, port=%s)",
+            paste(sprintf("c <- RS.connect(host='%s', port=%s)",
                 RserveConnection@host,
                 RserveConnection@port),
             "RS.eval(c, options('useFancyQuotes' = FALSE))",
