@@ -224,7 +224,13 @@ galaxy <-
             
             xmlAttrs(paramNode)["name"] <- nm
             type <- RtoGalaxyTypeMap[[item$type]]
-            if (item$type == "GalaxyInputFile") type <- "data"
+            if (item$type == "GalaxyInputFile")
+            {
+                type <- "data"
+                if (length(galaxyItem@formatFilter))
+                    xmlAttrs(paramNode)["format"] <- galaxyItem@formatFilter
+
+            }
             if (item$length > 1) type <- "select"
             xmlAttrs(paramNode)["type"] <- type
 

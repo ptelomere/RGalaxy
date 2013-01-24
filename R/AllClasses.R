@@ -207,12 +207,13 @@ GalaxyOutput <-
 
 
 setClass("GalaxyInputFile", contains=c("GalaxyParam", "character"),
-    representation("required"="logical"))
+    representation("required"="logical", "formatFilter"="character"))
 
 
-GalaxyInputFile <- function(required=TRUE)
+GalaxyInputFile <- function(required=TRUE, formatFilter=character(0))
 {
-    new("GalaxyInputFile", required=required)
+    new("GalaxyInputFile", required=required,
+        formatFilter=formatFilter)
 }
 
 setClass("GalaxyRemoteError", contains="character")
