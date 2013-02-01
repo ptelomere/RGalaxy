@@ -3,10 +3,12 @@
 \alias{GalaxyIntegerParam}
 \alias{GalaxyLogicalParam}
 \alias{GalaxyNumericParam}
+\alias{GalaxySelectParam}
 \alias{GalaxyCharacterParam-class}
 \alias{GalaxyIntegerParam-class}
 \alias{GalaxyLogicalParam-class}
 \alias{GalaxyNumericParam-class}
+\alias{GalaxySelectParam-class}
 \alias{GalaxyClasses}
 \alias{GalaxyParam}
 \title{Galaxy Parameter Classes}
@@ -20,6 +22,8 @@
   GalaxyCharacterParam(...)
 
   GalaxyLogicalParam(...)
+
+  GalaxySelectParam(...)
 }
 \arguments{
   \item{\dots}{
@@ -94,11 +98,11 @@
 \examples{
 	GalaxyIntegerParam()
 	GalaxyIntegerParam(1L)
-	GalaxyIntegerParam(c(a=1L, b=2L)) # a select list
+	GalaxySelectParam(c(a=1L, b=2L))
 
 	GalaxyNumericParam(2.0, required=TRUE)
 
-	GalaxyCharacterParam(c("First Choice"="one",
+	GalaxySelectParam(c("First Choice"="one",
 		"Second Choice"="two")) # a select list
 	GalaxyLogicalParam(checked=TRUE)
 }

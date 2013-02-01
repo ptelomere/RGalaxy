@@ -8,7 +8,7 @@ pdfclean:
 
 clean:
 	rm -rf *.tex *.bbl *.blg *.aux *.out *.log cache *.R
-	rm -rf figure
+	rm -rf figure test-data
 	rm -rf *.md
 
 setvars:

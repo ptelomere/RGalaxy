@@ -82,10 +82,10 @@ getFuncName <- function(func)
 ##     but will arise when functions are called from R.
 galaxy <- 
     function(func, 
-        package=getPackage(getFuncName(func)),
-        manpage=(getFuncName(func)), 
-        name=getFriendlyName(getFuncName(func)),
-        version=getVersion(getFuncName(func)),
+        package=getPackage(func),
+        manpage=func, 
+        name=getFriendlyName(func),
+        version=getVersion(func),
         galaxyConfig,
         dirToRoxygenize,
         RserveConnection=NULL)
@@ -231,7 +231,10 @@ galaxy <-
                     xmlAttrs(paramNode)["format"] <- galaxyItem@formatFilter
 
             }
-            if (item$length > 1) type <- "select"
+            if (item$length > 1 || "GalaxySelectParam" %in% class(galaxyItem))
+            {
+                type <- "select"
+            }
             xmlAttrs(paramNode)["type"] <- type
 
             if(!is.null(item$default))
@@ -437,7 +440,7 @@ createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
             sprintf("res <- RS.eval(c, wrappedFunction(%s))",
                 repList$FULLFUNCNAME),
             "RS.close(c)",
-            "if(is(res, 'GalaxyRemoteError'))gstop(res)",
+            "if(is(res, 'GalaxyRemoteError'))RGalaxy::gstop(res)",
             sep="\n")
 
     } else {
@@ -524,6 +527,9 @@ getFuncInfo <- function(func, param)
     else if (ret$length == 0)
         ret$default <- NULL ## ??
     else
+        ret$selectoptions <- f
+
+    if ("GalaxySelectParam" %in% class(cl))
         ret$selectoptions <- f
     ret$label <- getFriendlyName(param)
     if (extends(cl, "GalaxyNonFileParam"))

@@ -12,8 +12,8 @@
 \usage{
 galaxy(func, 
         package=getPackage(func),
-        manpage=deparse(substitute(func)), 
-        name=getFriendlyName(deparse(substitute(func))),
+        manpage=func, 
+        name=getFriendlyName(func),
         version=getVersion(func),
         galaxyConfig,
         dirToRoxygenize,
@@ -24,9 +24,9 @@ galaxy(func,
 \arguments{
   \item{func}{
     \bold{Required.}
-    The function to make available in Galaxy. This function should be 
-    entirely-self contained, and should accept as arguments the full paths
-    to its input and output file(s).
+    TA character vector naming the function to make available in Galaxy.
+    This function should be     entirely-self contained, and should accept
+    as arguments the full paths to its input and output file(s).
   }
   \item{package}{
     The name of the package where \code{func} lives, or NULL if 
@@ -88,7 +88,7 @@ file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
     file.path(galaxyHome, "tool_conf.xml"), overwrite=FALSE)
 
 \dontrun{
-galaxy(functionToGalaxify,
+galaxy("functionToGalaxify",
     galaxyConfig=GalaxyConfig(galaxyHome, "mytool",
       "Test Section", "testSectionId"),
     RserveConnection=RserveConnection())

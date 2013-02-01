@@ -75,7 +75,7 @@ old_test_galaxy_param <- function()
 test_galaxy <- function() 
 {
 
-    galaxy(functionToGalaxify,
+    galaxy("functionToGalaxify",
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section", 
             "testSectionId"))
     
@@ -99,7 +99,7 @@ test_galaxy_on_function_not_in_package <- function()
 
     base::source(system.file("extdata", "functionToGalaxify2.R", package="RGalaxy"))
     manpage <- system.file("extdata", "functionToGalaxify2.Rd", package="RGalaxy")
-    galaxy(functionToGalaxify2,
+    galaxy("functionToGalaxify2",
         manpage=manpage,
         version=packageDescription("RGalaxy")$Version,
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
@@ -136,7 +136,7 @@ test_galaxy_sanity_checks <- function()
     galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section", 
         "testSectionId")
 
-    checkException(galaxy(ls, a=2, galaxyConfig=galaxyConfig),
+    checkException(galaxy("ls", a=2, galaxyConfig=galaxyConfig),
         "galaxy allows 'plain' types")
 
 #    checkException(galaxy())
@@ -195,7 +195,7 @@ test_galaxy_with_select <- function()
     selectoptions <- list("TitleA"="A", "TitleB"="B")
     
     funcName <- "testFunctionWithSelect"
-    galaxy(testFunctionWithSelect,
+    galaxy("testFunctionWithSelect",
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
             "testSectionId"))
     
@@ -264,7 +264,7 @@ test_galaxy_with_select <- function()
 test_required_option <- function()
 {
     base::source(system.file("samplePkg", "R", "functions.R", package="RGalaxy"))
-    galaxy(testRequiredOption,
+    galaxy("testRequiredOption",
         manpage=system.file("samplePkg", "man",
         "testRequiredOption.Rd", package="RGalaxy"),
         version="0.99.0",
@@ -296,7 +296,7 @@ test_required_option <- function()
 test_missing_param <- function()
 {
     base::source(system.file("samplePkg", "R", "functions.R", package="RGalaxy"))
-    galaxy(testMissingParams,
+    galaxy("testMissingParams",
         manpage=system.file("samplePkg", "man",
         "testMissingParams.Rd", package="RGalaxy"),
         version="0.99.0",
@@ -322,7 +322,7 @@ test_missing_param <- function()
 test_checkboxes <- function()
 {
     base::source(system.file("samplePkg", "R", "functions.R", package="RGalaxy"))
-    galaxy(testCheckboxes,
+    galaxy("testCheckboxes",
         manpage=system.file("samplePkg", "man",
         "testCheckboxes.Rd", package="RGalaxy"),
         version="0.99.0",
@@ -346,11 +346,11 @@ test_multiple_galaxifications_do_not_overwrite_each_other <- function()
     file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
         file.path(galaxyHome, "tool_conf.xml"), overwrite=TRUE)
     
-    galaxy(functionToGalaxify,
+    galaxy("functionToGalaxify",
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
             "testSectionId"))
     
-    galaxy(anotherTestFunction,
+    galaxy("anotherTestFunction",
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section",
             "testSectionId"))
     toolfile <- file.path(galaxyHome, "tool_conf.xml")

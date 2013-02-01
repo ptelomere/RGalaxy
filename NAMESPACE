@@ -7,7 +7,7 @@ export(RserveConnection)
 exportClass(GalaxyIntegerParam, GalaxyNumericParam,
 	GalaxyCharacterParam, GalaxyLogicalParam)
 export(GalaxyIntegerParam, GalaxyNumericParam,
-	GalaxyCharacterParam, GalaxyLogicalParam)
+	GalaxyCharacterParam, GalaxyLogicalParam, GalaxySelectParam)
 export(gstop, gwarning, gmessage)
 export(runFunctionalTest)
 export(probeLookup)

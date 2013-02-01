@@ -142,7 +142,7 @@ file.copy(system.file("galaxy", "tool_conf.xml", package="RGalaxy"),
 Now we point Galaxy to the function we just wrote:
 
 ```{r run_galaxy, tidy=FALSE}
-galaxy(addTwoNumbers,
+galaxy("addTwoNumbers",
     galaxyConfig=
       GalaxyConfig(galaxyHome, "mytool", "Test Section",
         "testSectionId")
@@ -293,7 +293,7 @@ Start Rserve as follows:
 Re-run Galaxy on your function, specifying that Rserv should be used:
 
 ```{r withRserve, tidy=FALSE, eval=FALSE}
-galaxy(addTwoNumbersWithTest,
+galaxy("addTwoNumbersWithTest",
     galaxyConfig=
       GalaxyConfig(galaxyHome, "mytool", "Test Section",
         "testSectionId"),

@@ -174,7 +174,9 @@ GalaxyLogicalParam = setClass("GalaxyLogicalParam",
     representation(testValues="logical"),
     contains=c("GalaxyNonFileParam", "logical"))
 
-
+GalaxySelectParam = setClass("GalaxySelectParam",
+    representation(testValues="ANY"),
+    contains=c("GalaxyNonFileParam", "ANY"))
 
 
 

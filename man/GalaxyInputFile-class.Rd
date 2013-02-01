@@ -11,10 +11,13 @@
     R function that you expose in Galaxy.
 }
 \usage{
-GalaxyInputFile(required=TRUE)
+GalaxyInputFile(required=TRUE, formatFilter=character(0))
 }
 \arguments{
   \item{required}{Whether to require that the user provide this dataset.}
+  \item{formatFilter}{ (optional) A file type for filtering the list
+    of possible input data sets. Should be one of the file types listed
+    in the datatypes_conf.xml file in the root of your Galaxy distribution.}
 }
 
 
@@ -30,6 +33,8 @@ No methods defined with class "GalaxyInputFile" in the signature.
 }
 \examples{
     inputfile1=GalaxyInputFile()
+    ## The user can only choose csv files:
+    inputfile2=GalaxyInputFile(formatFilter="csv")
     
 }
 \keyword{classes}
