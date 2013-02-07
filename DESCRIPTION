@@ -25,7 +25,6 @@ Enhances:
     RSclient
 License: Artistic-2.0
 KeepSource: TRUE
-SystemRequirements: pandoc for building the vignette from source
 Collate:
     'AllClasses.R'
     'galaxy.R'
