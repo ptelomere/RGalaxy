@@ -1,4 +1,7 @@
-
+<!--
+%\VignetteEngine{knitr}
+%\VignetteIndexEntry{Introduction to RGalaxy}
+-->
 ````{r setup, echo=FALSE}
 options(width = 75)
 options(useFancyQuotes=FALSE)
