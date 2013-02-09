@@ -31,5 +31,4 @@ Collate:
     'man.R'
     'test_functions.R'
     'utils.R'
-    'zzz.R'
 VignetteBuilder: knitr
