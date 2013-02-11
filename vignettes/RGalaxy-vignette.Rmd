@@ -8,12 +8,14 @@ options(useFancyQuotes=FALSE)
 ```
 
 ```{r hook-printfun, echo=FALSE}
+library(knitr)
+library(formatR)
 knit_hooks$set(printfun = function(before, options, envir) {
   if (before) return()
   txt = capture.output(dump(options$printfun, '', envir = envir))
   ## reformat if tidy=TRUE
   if (options$tidy)
-  	txt = formatR::tidy.source(text=txt, output=FALSE,
+  	txt = tidy.source(text=txt, output=FALSE,
   		width.cutoff=30L, keep.comment=TRUE,
   		keep.blank.line=FALSE)$text.tidy
   paste(c('\n```r\n', txt, '\n```\n'), collapse="\n")
