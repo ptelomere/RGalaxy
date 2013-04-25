@@ -191,7 +191,7 @@ galaxy <-
         parent=xml)
     rpath <- "Rscript"
     if (path.to.R != "")
-        rpath <- file.path(path.to.R, "bin", "Rscript")
+        rpath <- file.path(path.expand(path.to.R), "bin", "Rscript")
 
     xmlAttrs(commandNode)["interpreter"] <- sprintf("%s --vanilla", rpath)
     inputsNode <- newXMLNode("inputs", parent=xml)
