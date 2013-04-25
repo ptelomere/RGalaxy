@@ -88,7 +88,8 @@ galaxy <-
         version=getVersion(func),
         galaxyConfig,
         dirToRoxygenize,
-        RserveConnection=NULL)
+        RserveConnection=NULL,
+        path.to.R="")
 {
 #    force(manpage)
     if (is.function(func))
@@ -188,7 +189,11 @@ galaxy <-
     
     commandNode <- newXMLNode("command", newXMLTextNode(commandText),
         parent=xml)
-    xmlAttrs(commandNode)["interpreter"] <- "Rscript --vanilla"
+    rpath <- "Rscript"
+    if (path.to.R != "")
+        rpath <- file.path(path.to.R, "bin", "Rscript")
+
+    xmlAttrs(commandNode)["interpreter"] <- sprintf("%s --vanilla", rpath)
     inputsNode <- newXMLNode("inputs", parent=xml)
     outputsNode <- newXMLNode("outputs", parent=xml)
     if (isTestable(funcInfo, funcName, package))

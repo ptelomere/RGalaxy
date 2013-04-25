@@ -17,7 +17,8 @@ galaxy(func,
         version=getVersion(func),
         galaxyConfig,
         dirToRoxygenize,
-        RserveConnection=NULL)
+        RserveConnection=NULL,
+        path.to.R="")
 
 }
 
@@ -65,6 +66,12 @@ galaxy(func,
     make functions run faster since dependencies have already been loaded.
     If NULL (the default), function is run normally.
     See vignette for more information.
+  }
+  \item{path.to.R}{
+  If not empty, Galaxy will look for R in this directory. This is 
+  useful if there are multiple versions of R on your system and your
+  Galaxy configuration prevents you from setting your PATH to point
+  to the right one.
   }
 }
 
