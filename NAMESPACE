@@ -5,7 +5,7 @@ exportClass(GalaxyConfig, GalaxyOutput, GalaxyInputFile)
 exportClass(RserveConnection)
 export(RserveConnection)
 exportClass(GalaxyIntegerParam, GalaxyNumericParam,
-	GalaxyCharacterParam, GalaxyLogicalParam)
+	GalaxyCharacterParam, GalaxyLogicalParam, GalaxySelectParam)
 export(GalaxyIntegerParam, GalaxyNumericParam,
 	GalaxyCharacterParam, GalaxyLogicalParam, GalaxySelectParam)
 export(gstop, gwarning, gmessage)
