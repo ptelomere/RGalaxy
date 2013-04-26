@@ -49,6 +49,29 @@ testFunctionWithSelect <- function(inputfile1=GalaxyInputFile(),
         plotSubTitle, outputfile1, outputfile2)
 }
 
+#' A variation on functionToGalaxify that takes a multiple-choice option
+#' using the GalaxySelectParam class.
+#' @details There are no details.
+#' @param inputfile1 the first matrix
+#' @param inputfile2 the second matrix
+#' @param plotTitle the plot title
+#' @param plotSubTitle the plot subtitle
+#' @param outputfile1 the csv output file
+#' @param outputfile2 the pdf output file
+testFunctionWithGalaxySelectParam <- function(inputfile1=GalaxyInputFile(),
+    inputfile2=GalaxyInputFile(),
+    plotTitle=GalaxySelectParam(c("TitleA"="A"),
+        force_select=TRUE),
+    plotSubTitle=GalaxyCharacterParam("My subtitle"),
+    outputfile1=GalaxyOutput("mydata", "csv"),
+    outputfile2=GalaxyOutput("myplot", "pdf"))
+{
+    functionToGalaxify(inputfile1, inputfile2, plotTitle,
+        plotSubTitle, outputfile1, outputfile2)
+}
+
+
+
 anotherTestFunction <- function(inputfile1=GalaxyInputFile(),
     inputfile2=GalaxyInputFile(),
     plotTitle=GalaxyCharacterParam(c("TitleA"="A", "TitleB"="B")),

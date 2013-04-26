@@ -534,7 +534,7 @@ getFuncInfo <- function(func, param)
     else
         ret$selectoptions <- f
 
-    if ("GalaxySelectParam" %in% class(cl))
+    if ("GalaxySelectParam" %in% class(cl) || "GalaxySelectParam" == cl)
         ret$selectoptions <- f
     ret$label <- getFriendlyName(param)
     if (extends(cl, "GalaxyNonFileParam"))
