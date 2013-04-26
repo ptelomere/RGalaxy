@@ -410,6 +410,12 @@ createScriptFile <- function(scriptFileName, func, funcName, funcInfo,
         if (type == "GalaxyIntegerParam") type <- "integer"
         if (type == "GalaxyNumericParam") type <- "numeric"
         if (type == "GalaxyLogicalParam") type <- "logical"
+        if (type == "GalaxySelectParam")
+        {
+            tmp <- item$selectoptions
+            gsp <- eval(tmp)
+            type <- class(gsp[1])
+        }
         repVal <- paste(repVal, "option_list$",
             sprintf("%s <- make_option('--%s', type='%s')\n",
             name, name, type),
