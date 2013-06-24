@@ -146,7 +146,7 @@ probeLookup <- function(
 {
     suppressPackageStartupMessages(library(hgu95av2.db))
     ids <- strsplit(probe_ids, " ")[[1]]
-    results <- select(hgu95av2.db, keys=ids, cols=c("SYMBOL","PFAM"),
+    results <- select(hgu95av2.db, keys=ids, columns=c("SYMBOL","PFAM"),
         keytype="PROBEID")
     write.csv(results, file=outputfile)
 }
