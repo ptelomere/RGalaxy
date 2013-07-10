@@ -133,7 +133,8 @@ The directory where you just installed Galaxy (a full path ending in
 `galaxyHome` in the following code snippet.
 
 ```{r galaxyHomeSetup, echo=FALSE, results="hide"}
-galaxyHome <- getwd()
+if (!exists("galaxyHome"))
+  galaxyHome <- getwd()
 toolDir <- "RGalaxy_test_tool"
 funcName <- "functionToGalaxify"
 
