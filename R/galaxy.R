@@ -46,7 +46,7 @@ editToolConfXML <-
 }
 
 
-isTestable <- function(funcInfo, funcName, package) 
+isTestable <- function(funcInfo, funcName, package, functionalTestDirectory) 
 {   
     testables <- logical(0)
     for (info in funcInfo)
@@ -55,14 +55,25 @@ isTestable <- function(funcInfo, funcName, package)
         if (!is.null(info$testValues) && length(info$testValues) > 0)
             testable <- TRUE
         if (length(info['type']) > 0 &&
-            info['type'] %in% c("GalaxyInputFile", "GalaxyOutput") &&
-            !is.null(package))
+            info['type'] %in% c("GalaxyInputFile", "GalaxyOutput"))
         {
-            testFile <- system.file("functionalTests", funcName,
-                info$param, package=package)
-            testable <- file.exists(testFile)
+            if (missing(package) || is.null(package))
+            {
+                if (missing(functionalTestDirectory))
+                {
+                    testable <- FALSE
+                } else {
+                    testFile <- file.path(functionalTestDirectory,
+                        funcName, info$param)
+                    testable <- file.exists(testFile)
+                }
+            } else {
+                testFile <- system.file("functionalTests", funcName,
+                    info$param, package=package)
+                testable <- file.exists(testFile)
+            }
         }
-        testables <- c(testables, testable)
+        testables <- append(testables, testable)
     }
     all(testables)
 }
@@ -89,7 +100,8 @@ galaxy <-
         galaxyConfig,
         dirToRoxygenize,
         RserveConnection=NULL,
-        path.to.R="")
+        path.to.R="",
+        functionalTestDirectory)
 {
 #    force(manpage)
     if (is.function(func))
@@ -142,7 +154,7 @@ galaxy <-
         funcInfo[[param]] <- getFuncInfo(functionToGalaxify, param)
     
 
-    if (!isTestable(funcInfo, funcName, package)) 
+    if (!isTestable(funcInfo, funcName, package, functionalTestDirectory)) 
         gwarning("Not enough information to create a functional test.")
         
     if (!suppressWarnings(any(lapply(funcInfo,
@@ -555,17 +567,28 @@ getFuncInfo <- function(func, param)
 ##' FIXME
 ##' @return Whether the test passes.
 ##' @param func A function to be exposed in Galaxy.
-runFunctionalTest <- function(func)
+##' @param functionalTestDirectory Where to find functional tests, if func is not
+##' in a package.
+runFunctionalTest <- function(func, functionalTestDirectory)
 {
     funcName <- deparse(substitute(func))
-    package <- getPackage(func)
+    if (missing(functionalTestDirectory))
+    {
+        package <- getPackage(func)
+        fixtureDir <- system.file("functionalTests",
+            funcName, package=package)
+
+    } else {
+        package <- NULL
+        fixtureDir <- file.path(functionalTestDirectory, funcName)
+    }
     funcInfo <- list()
     for (param in names(formals(func)))
         funcInfo[[param]] <- getFuncInfo(func, param)
 
-    if (is.null(package))
+    if (missing(functionalTestDirectory) && is.null(package))
         gstop("Function must be in a package.")
-    if (!isTestable(funcInfo, funcName, package)) 
+    if (!isTestable(funcInfo, funcName, package, functionalTestDirectory)) 
         gstop("Not enough information to run functional test.")
     params <- list()
     outfiles <- list()
@@ -589,8 +612,7 @@ runFunctionalTest <- function(func)
     {
 
         generated <- unlist(outfiles[outfilename])
-        fixture <- system.file("functionalTests",
-            funcName, funcInfo[[outfilename]]$param, package=package)
+        fixture <- file.path(fixtureDir, funcInfo[[outfilename]]$param)
         diff <- tools:::md5sum(generated) == tools:::md5sum(fixture)
         diffOK <- c(diffOK, diff)
         if(!diff)

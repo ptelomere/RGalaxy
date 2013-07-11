@@ -5,7 +5,7 @@ using the GalaxySelectParam class.}
 \usage{
   testFunctionWithGalaxySelectParam(inputfile1 = GalaxyInputFile(),
     inputfile2 = GalaxyInputFile(),
-    plotTitle = GalaxySelectParam(c(TitleA = "A", TitleB = "B"), force_select = TRUE),
+    plotTitle = GalaxySelectParam(c(TitleA = "A"), force_select = TRUE),
     plotSubTitle = GalaxyCharacterParam("My subtitle"),
     outputfile1 = GalaxyOutput("mydata", "csv"),
     outputfile2 = GalaxyOutput("myplot", "pdf"))

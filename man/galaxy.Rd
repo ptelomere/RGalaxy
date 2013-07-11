@@ -18,7 +18,8 @@ galaxy(func,
         galaxyConfig,
         dirToRoxygenize,
         RserveConnection=NULL,
-        path.to.R="")
+        path.to.R="",
+        functionalTestDirectory)
 
 }
 
@@ -72,6 +73,10 @@ galaxy(func,
   useful if there are multiple versions of R on your system and your
   Galaxy configuration prevents you from setting your PATH to point
   to the right one.
+  }
+  \item{functionalTestDirectory}{
+  If \code{package} is not specified, this directory is searched
+  for functional test fixtures.
   }
 }
 

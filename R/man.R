@@ -85,7 +85,10 @@ parseSectionFromText <- function(rd, section, required=TRUE)
     }
     if (!found)
     {
-        msg <- sprintf("Did not find section '%s' in man page.", section) 
+        status = "Note: "
+        if (required)
+            status = ""
+        msg <- sprintf("%sDid not find section '%s' in man page.", status, section) 
         if (required)
         {
             gstop(msg)
