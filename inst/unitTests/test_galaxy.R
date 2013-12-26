@@ -74,7 +74,7 @@ old_test_galaxy_param <- function()
 
 test_galaxy <- function() 
 {
-
+    checkTrue(FALSE)
     galaxy("functionToGalaxify",
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section", 
             "testSectionId"))
