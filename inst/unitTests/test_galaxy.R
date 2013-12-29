@@ -74,8 +74,6 @@ old_test_galaxy_param <- function()
 
 test_galaxy <- function() 
 {
-    if (.Platform$r_arch == "i386")
-        checkTrue(FALSE)
     galaxy("functionToGalaxify",
         galaxyConfig=GalaxyConfig(galaxyHome, toolDir, "Test Section", 
             "testSectionId"))
