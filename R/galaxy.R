@@ -230,7 +230,7 @@ galaxy <-
                 ##dummyParam <- GalaxyParam()
                 xmlAttrs(validatorNode)["message"] <-
                     galaxyItem@requiredMsg
-                xmlAttrs(paramNode)['optional'] <- 'false'
+                xmlAttrs(paramNode)['optional'] <- 'true'
             }
             if (item$type == "GalaxyInputFile")
             {
