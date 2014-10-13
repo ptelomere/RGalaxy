@@ -1,0 +1,18 @@
+export(galaxy, functionToGalaxify, anotherTestFunction,
+    GalaxyConfig, GalaxyOutput, getFriendlyName, GalaxyInputFile,
+    testFunctionWithSelect, testFunctionWithGalaxySelectParam)
+exportClass(GalaxyConfig, GalaxyOutput, GalaxyInputFile)
+exportClass(RserveConnection)
+export(RserveConnection)
+exportClass(GalaxyIntegerParam, GalaxyNumericParam,
+	GalaxyCharacterParam, GalaxyLogicalParam, GalaxySelectParam)
+export(GalaxyIntegerParam, GalaxyNumericParam,
+	GalaxyCharacterParam, GalaxyLogicalParam, GalaxySelectParam)
+export(gstop, gwarning, gmessage)
+export(runFunctionalTest)
+export(probeLookup)
+export(addTwoNumbers, addTwoNumbersWithTest)
+import(BiocGenerics)
+importFrom(Biobase, copySubstitute)
+importFrom(roxygen2, roxygenize, rd_roclet)
+##exportMethods(format)
