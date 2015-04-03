@@ -1,4 +1,4 @@
-Package: RGalaxy 
+Package: RGalaxy    
 Title: Make an R function available in the Galaxy web platform
 Description: Given an R function and its manual page, make the documented
     function available in Galaxy.
